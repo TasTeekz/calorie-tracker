@@ -1,6 +1,6 @@
 Team members:
 Shektybayev Olzhas 24B032113
-Alan Token 24B032060
+Alan Tokin 24B032060
 Ali Dosymbyek 23B031927
 
 Project Description:

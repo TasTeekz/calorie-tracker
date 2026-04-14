@@ -1,0 +1,234 @@
+/* --- Глобальные переменные --- */
+:host {
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-light: #64748b;
+  --border: #e2e8f0;
+  --placeholder: #94a3b8;
+}
+
+/* --- Основной контейнер --- */
+.container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+  background-color: var(--bg);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text);
+}
+
+/* --- Навигация --- */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+nav h2 { margin: 0; font-size: 1.5rem; }
+
+.history-link {
+  background: white;
+  border: 1px solid var(--border);
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+/* --- Универсальные карточки --- */
+.card {
+  background: var(--card);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+}
+
+/* --- Сводка прогресса (Верхняя карточка) --- */
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.stats-header h2 { margin: 0; font-size: 1.1rem; color: var(--text-light); }
+.total-count b { font-size: 1.2rem; color: var(--primary); }
+
+.bar {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.bar div {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 5px;
+  transition: width 0.5s ease-out;
+}
+
+/* --- ИСПРАВЛЕНИЕ: МАКРОНУТРИЕНТЫ ЗА ДЕНЬ --- */
+/* Убрали старую тесную сетку, сделали аккуратную сводку */
+.macros-summary {
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+.macro-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.macro-item span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-light);
+  text-transform: uppercase;
+}
+
+.macro-item b {
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+/* --- Переключатель режима ввода --- */
+.mode-btns {
+  display: flex;
+  background: #e2e8f0;
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.mode-btns button {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--text-light);
+  transition: all 0.2s;
+}
+
+.mode-btns button.active {
+  background: white;
+  color: var(--primary);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* --- Форма добавления --- */
+.meta-inputs, .quick-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+/* ИСПРАВЛЕНИЕ: МАКРОНУТРИЕНТЫ В ФОРМЕ --- */
+/* Сделали чистую сетку без `<label>` над полями */
+.macros-inputs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+/* Улучшили стили для инпутов, чтобы плейсхолдеры были заметными */
+input, select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+input:focus, select:focus {
+  outline: 2px solid var(--primary);
+  border-color: transparent;
+}
+
+/* Сделали плейсхолдеры чуть ярче для КБЖУ */
+input::placeholder {
+  color: var(--placeholder);
+}
+
+.quick-row select { flex: 1; }
+.weight-input { width: 100px; display: flex; align-items: center; gap: 5px; }
+
+.divider { border: none; border-top: 1px solid var(--border); margin: 0 0 16px; }
+
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submit-btn:hover { background: var(--primary-hover); }
+.submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* --- Список съеденного --- */
+.entries-list { display: flex; flex-direction: column; gap: 12px; }
+
+.entry-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.entry-main { display: flex; flex-direction: column; gap: 4px; }
+
+.meal-tag {
+  font-size: 0.7rem;
+  background: #eef2ff;
+  color: var(--primary);
+  padding: 2px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  font-weight: 700;
+  align-self: flex-start;
+}
+
+.entry-text strong { display: block; font-size: 1rem; }
+.entry-text p { margin: 0; font-size: 0.85rem; color: var(--text-light); }
+
+.remove-btn {
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

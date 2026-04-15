@@ -123,7 +123,3 @@ calorie-tracker/
 5. Add more features (meal suggestions, dietary preferences, etc.)
 
 ---
-
-## 📧 Contact
-
-For questions, contact team members or check project documentation.

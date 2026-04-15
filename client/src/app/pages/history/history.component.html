@@ -38,16 +38,16 @@
         @for (entry of entries; track entry.id) {
           <div class="entry-card">
             <div>
-              <p><strong>{{ entry.product_name }}</strong></p>
+              <p>
+                <strong>{{ entry.product_name }}</strong>
+              </p>
               <p>{{ getMealTypeLabel(entry.meal_type) }}</p>
               <p>{{ entry.grams }} g</p>
               <p>{{ entry.calories }} kcal</p>
               <p>P: {{ entry.protein }} | F: {{ entry.fat }} | C: {{ entry.carbs }}</p>
             </div>
 
-            <button class="delete-btn" (click)="onDeleteEntry(entry.id)">
-              Delete
-            </button>
+            <button class="delete-btn" (click)="onDeleteEntry(entry.id)">Delete</button>
           </div>
         }
       </div>

@@ -10,7 +10,7 @@ import { Product } from '../../models/product.model';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './products.component.html',
-  styleUrl: './products.component.css'
+  styleUrl: './products.component.css',
 })
 export class ProductsComponent implements OnInit {
   private calorieApi = inject(CalorieApiService);
@@ -23,7 +23,7 @@ export class ProductsComponent implements OnInit {
     calories_per_100g: 0,
     protein_per_100g: 0,
     fat_per_100g: 0,
-    carbs_per_100g: 0
+    carbs_per_100g: 0,
   };
 
   editingId: number | null = null;
@@ -39,7 +39,7 @@ export class ProductsComponent implements OnInit {
       },
       error: () => {
         this.errorMessage = 'Failed to load products';
-      }
+      },
     });
   }
 
@@ -53,13 +53,13 @@ export class ProductsComponent implements OnInit {
           calories_per_100g: 0,
           protein_per_100g: 0,
           fat_per_100g: 0,
-          carbs_per_100g: 0
+          carbs_per_100g: 0,
         };
         this.loadProducts();
       },
       error: () => {
         this.errorMessage = 'Failed to create product';
-      }
+      },
     });
   }
 
@@ -70,7 +70,7 @@ export class ProductsComponent implements OnInit {
       },
       error: () => {
         this.errorMessage = 'Failed to delete product';
-      }
+      },
     });
   }
 
@@ -81,7 +81,7 @@ export class ProductsComponent implements OnInit {
       calories_per_100g: product.calories_per_100g,
       protein_per_100g: product.protein_per_100g,
       fat_per_100g: product.fat_per_100g,
-      carbs_per_100g: product.carbs_per_100g
+      carbs_per_100g: product.carbs_per_100g,
     };
   }
 
@@ -96,13 +96,13 @@ export class ProductsComponent implements OnInit {
           calories_per_100g: 0,
           protein_per_100g: 0,
           fat_per_100g: 0,
-          carbs_per_100g: 0
+          carbs_per_100g: 0,
         };
         this.loadProducts();
       },
       error: () => {
         this.errorMessage = 'Failed to update product';
-      }
+      },
     });
   }
 }

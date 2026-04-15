@@ -10,7 +10,7 @@ import { AuthService } from '../../services/auth.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.css'
+  styleUrl: './login.component.css',
 })
 export class LoginComponent {
   private authService = inject(AuthService);
@@ -26,7 +26,7 @@ export class LoginComponent {
     this.authService
       .login({
         username: this.username,
-        password: this.password
+        password: this.password,
       })
       .subscribe({
         next: () => {
@@ -34,7 +34,7 @@ export class LoginComponent {
         },
         error: () => {
           this.errorMessage = 'Invalid username or password';
-        }
+        },
       });
   }
 }

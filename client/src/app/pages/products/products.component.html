@@ -33,7 +33,10 @@
       <div class="item">
         <div>
           <strong>{{ product.name }}</strong>
-          <p>{{ product.calories_per_100g }} kcal | P: {{ product.protein_per_100g }} | F: {{ product.fat_per_100g }} | C: {{ product.carbs_per_100g }}</p>
+          <p>
+            {{ product.calories_per_100g }} kcal | P: {{ product.protein_per_100g }} | F:
+            {{ product.fat_per_100g }} | C: {{ product.carbs_per_100g }}
+          </p>
         </div>
         <div class="actions">
           <button (click)="onEditProduct(product)">Edit</button>

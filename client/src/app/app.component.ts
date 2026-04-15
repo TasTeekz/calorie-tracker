@@ -9,7 +9,7 @@ import { AuthService } from './services/auth.service';
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
 })
 export class AppComponent {
   private authService = inject(AuthService);
@@ -23,7 +23,7 @@ export class AppComponent {
       error: () => {
         this.authService.clearTokens();
         this.router.navigate(['/login']);
-      }
+      },
     });
   }
 

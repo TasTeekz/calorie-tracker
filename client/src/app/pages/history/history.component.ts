@@ -10,7 +10,7 @@ import { MealEntry, DailySummary } from '../../models/entry.model';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './history.component.html',
-  styleUrl: './history.component.css'
+  styleUrl: './history.component.css',
 })
 export class HistoryComponent implements OnInit {
   private calorieApi = inject(CalorieApiService);
@@ -42,7 +42,7 @@ export class HistoryComponent implements OnInit {
             this.summary = null;
             this.errorMessage = 'Failed to load summary';
             this.loading = false;
-          }
+          },
         });
       },
       error: () => {
@@ -50,7 +50,7 @@ export class HistoryComponent implements OnInit {
         this.summary = null;
         this.errorMessage = 'Failed to load history';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -63,7 +63,7 @@ export class HistoryComponent implements OnInit {
       },
       error: () => {
         this.errorMessage = 'Failed to delete entry';
-      }
+      },
     });
   }
 

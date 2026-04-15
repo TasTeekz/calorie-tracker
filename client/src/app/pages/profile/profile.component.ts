@@ -10,7 +10,7 @@ import { ProfileGoalResponse } from '../../models/profile.model';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './profile.component.html',
-  styleUrl: './profile.component.css'
+  styleUrl: './profile.component.css',
 })
 export class ProfileComponent implements OnInit {
   private calorieApi = inject(CalorieApiService);
@@ -52,7 +52,7 @@ export class ProfileComponent implements OnInit {
       error: () => {
         this.errorMessage = 'Failed to load profile';
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -65,14 +65,14 @@ export class ProfileComponent implements OnInit {
         profile: {
           age: this.age,
           height: this.height,
-          weight: this.weight
+          weight: this.weight,
         },
         daily_goal: {
           calorie_goal: this.calorie_goal,
           protein_goal: this.protein_goal,
           fat_goal: this.fat_goal,
-          carbs_goal: this.carbs_goal
-        }
+          carbs_goal: this.carbs_goal,
+        },
       })
       .subscribe({
         next: () => {
@@ -80,7 +80,7 @@ export class ProfileComponent implements OnInit {
         },
         error: () => {
           this.errorMessage = 'Failed to update profile';
-        }
+        },
       });
   }
 }

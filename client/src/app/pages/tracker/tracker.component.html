@@ -4,86 +4,85 @@
     <a routerLink="/history" class="history-link">📅 История</a>
   </nav>
 
-  <section class="card summary-card" *ngIf="currentEntries$ | async as items">
+  @if (errorMessage) {
+    <section class="card" style="margin-bottom: 20px; border-color: #fca5a5; color: #b91c1c">
+      {{ errorMessage }}
+    </section>
+  }
+
+  <section class="card summary-card">
     <div class="stats-header">
-      <h3>{{ foodForm.get('date')?.value | date:'longDate' }}</h3>
-      <p class="total-count"><b>{{ calorieService.getTotals(items).calories }}</b> / 2000 ккал</p>
+      <h3>{{ selectedDate | date: 'longDate' }}</h3>
+      <p class="total-count">
+        <b>{{ summary?.total_calories || 0 }}</b> / 2000 ккал
+      </p>
     </div>
-    
+
     <div class="bar">
-      <div [style.width.%]="(calorieService.getTotals(items).calories / 2000) * 100"></div>
+      <div [style.width.%]="((summary?.total_calories || 0) / 2000) * 100"></div>
     </div>
 
     <div class="macros-summary">
       <div class="macro-item">
         <span>Б</span>
-        <b>{{ calorieService.getTotals(items).protein }}г</b>
+        <b>{{ summary?.total_protein || 0 }}г</b>
       </div>
       <div class="macro-item">
         <span>Ж</span>
-        <b>{{ calorieService.getTotals(items).fat }}г</b>
+        <b>{{ summary?.total_fat || 0 }}г</b>
       </div>
       <div class="macro-item">
         <span>У</span>
-        <b>{{ calorieService.getTotals(items).carbs }}г</b>
+        <b>{{ summary?.total_carbs || 0 }}г</b>
       </div>
     </div>
   </section>
 
-  <div class="mode-btns">
-    <button type="button" (click)="toggleMode(true)" [class.active]="isManualMode">Вручную</button>
-    <button type="button" (click)="toggleMode(false)" [class.active]="!isManualMode">Из базы</button>
-  </div>
-
   <section class="card form-card">
-    <form [formGroup]="foodForm" (ngSubmit)="onSubmit()">
-      
-      <div class="meta-inputs">
-        <input type="date" formControlName="date">
-        <select formControlName="mealType">
-          <option *ngFor="let type of mealTypes" [value]="type">{{type}}</option>
-        </select>
+    <div class="meta-inputs">
+      <input
+        type="date"
+        [(ngModel)]="selectedDate"
+        name="selectedDate"
+        (change)="loadEntriesAndSummary()"
+      />
+      <select [(ngModel)]="mealType" name="mealType">
+        <option value="breakfast">Breakfast</option>
+        <option value="lunch">Lunch</option>
+        <option value="dinner">Dinner</option>
+        <option value="snack">Snack</option>
+      </select>
+    </div>
+
+    <div class="quick-row">
+      <select [(ngModel)]="selectedProductId" name="selectedProductId">
+        <option [ngValue]="null">Выберите продукт...</option>
+        @for (p of products; track p.id) {
+          <option [ngValue]="p.id">{{ p.name }}</option>
+        }
+      </select>
+      <div class="weight-input">
+        <input type="number" [(ngModel)]="grams" name="grams" placeholder="гр." />
       </div>
+    </div>
 
-      <hr class="divider">
-
-      <div *ngIf="isManualMode" class="form-group">
-        <input formControlName="name" placeholder="Что съели?" class="full-width">
-      </div>
-
-      <div *ngIf="!isManualMode" class="quick-row">
-        <select (change)="onProductSelect($event)" formControlName="name">
-          <option value="" disabled selected>Выберите продукт...</option>
-          <option *ngFor="let p of products" [value]="p.name">{{p.name}}</option>
-        </select>
-        <div class="weight-input">
-          <input type="number" formControlName="weight" (input)="calc()" placeholder="гр.">
-        </div>
-      </div>
-
-      <div class="macros-inputs">
-        <input type="number" formControlName="calories" placeholder="Ккал*" [readonly]="!isManualMode">
-        <input type="number" formControlName="protein" placeholder="Б" [readonly]="!isManualMode">
-        <input type="number" formControlName="fat" placeholder="Ж" [readonly]="!isManualMode">
-        <input type="number" formControlName="carbs" placeholder="У" [readonly]="!isManualMode">
-      </div>
-
-      <button type="submit" class="submit-btn" [disabled]="foodForm.invalid">
-        Добавить запись
-      </button>
-    </form>
+    <button type="button" class="submit-btn" (click)="onAddEntry()">Добавить запись</button>
   </section>
 
   <section class="entries-list">
-    <div class="entry-card" *ngFor="let item of currentEntries$ | async">
-      <div class="entry-main">
-        <span class="meal-tag">{{ item.mealType }}</span>
-        <div class="entry-text">
-          <strong>{{ item.name }}</strong>
-          <p>{{ item.calories }} ккал • Б:{{item.protein}} Ж:{{item.fat}} У:{{item.carbs}}</p>
+    @for (item of entries; track item.id) {
+      <div class="entry-card">
+        <div class="entry-main">
+          <span class="meal-tag">{{ getMealTypeLabel(item.meal_type) }}</span>
+          <div class="entry-text">
+            <strong>{{ item.product_name }}</strong>
+            <p>
+              {{ item.calories }} ккал • Б:{{ item.protein }} Ж:{{ item.fat }} У:{{ item.carbs }}
+            </p>
+          </div>
         </div>
+        <button type="button" class="remove-btn" (click)="onDeleteEntry(item.id)">✕</button>
       </div>
-      <button type="button" class="remove-btn" (click)="onDelete(item.id)">✕</button>
-    </div>
+    }
   </section>
 </div>

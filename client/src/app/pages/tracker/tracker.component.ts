@@ -1,111 +1,132 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { CalorieService } from '../../services/calorie.service';
-import { PRODUCT_DATABASE, ProductBase } from '../../models/product-db';
-import { MealType, FoodItem } from '../../models/food-item.model';
-import { Observable, of } from 'rxjs';
+
+import { CalorieApiService } from '../../services/calorie-api.service';
+import { DailySummary, MealEntry, MealType } from '../../models/entry.model';
+import { Product } from '../../models/product.model';
 
 @Component({
   selector: 'app-tracker',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './tracker.component.html',
-  styleUrls: ['./tracker.component.css']
+  styleUrl: './tracker.component.css',
 })
 export class TrackerComponent implements OnInit {
-  // Инжектим зависимости
-  public calorieService = inject(CalorieService);
-  private fb = inject(FormBuilder);
+  private calorieApi = inject(CalorieApiService);
 
-  foodForm!: FormGroup;
-  isManualMode = true;
-  products = PRODUCT_DATABASE;
-  mealTypes: MealType[] = ['Завтрак', 'Обед', 'Ужин', 'Перекус'];
+  products: Product[] = [];
+  entries: MealEntry[] = [];
+  summary: DailySummary | null = null;
+
   today = new Date().toISOString().split('T')[0];
+  selectedDate = this.today;
+  selectedProductId: number | null = null;
+  grams = 100;
+  mealType: MealType = 'breakfast';
 
-  // Этот поток будет обновляться при смене даты
-  currentEntries$: Observable<FoodItem[]> = of([]);
+  errorMessage = '';
+  loading = false;
 
-  ngOnInit() {
-    this.initForm();
-    this.updateEntriesStream();
+  ngOnInit(): void {
+    this.loadProducts();
+    this.loadEntriesAndSummary();
   }
 
-  initForm() {
-    this.foodForm = this.fb.group({
-      date: [this.today, Validators.required],
-      mealType: ['Завтрак', Validators.required],
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      weight: [100, [Validators.min(1)]],
-      calories: [null, [Validators.required, Validators.min(1)]],
-      protein: [0],
-      fat: [0],
-      carbs: [0]
-    });
-
-    // Следим за сменой даты в календаре
-    this.foodForm.get('date')?.valueChanges.subscribe(() => {
-      this.updateEntriesStream();
+  loadProducts(): void {
+    this.calorieApi.getProducts().subscribe({
+      next: (data) => {
+        this.products = data;
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load products';
+      },
     });
   }
 
-  updateEntriesStream() {
-    const selectedDate = this.foodForm?.get('date')?.value || this.today;
-    this.currentEntries$ = this.calorieService.getItemsByDate(selectedDate);
-  }
+  loadEntriesAndSummary(): void {
+    this.loading = true;
+    this.errorMessage = '';
 
-  toggleMode(manual: boolean) {
-    this.isManualMode = manual;
-    this.foodForm.patchValue({
-      name: '',
-      weight: 100,
-      calories: null,
-      protein: 0,
-      fat: 0,
-      carbs: 0
+    this.calorieApi.getEntries(this.selectedDate).subscribe({
+      next: (entries) => {
+        this.entries = entries;
+
+        this.calorieApi.getDailySummary(this.selectedDate).subscribe({
+          next: (summary) => {
+            this.summary = summary;
+            this.loading = false;
+          },
+          error: () => {
+            this.summary = null;
+            this.errorMessage = 'Failed to load summary';
+            this.loading = false;
+          },
+        });
+      },
+      error: () => {
+        this.entries = [];
+        this.summary = null;
+        this.errorMessage = 'Failed to load entries';
+        this.loading = false;
+      },
     });
   }
 
-  onProductSelect(event: Event) {
-    const productName = (event.target as HTMLSelectElement).value;
-    const product = this.products.find(p => p.name === productName);
-    if (product) this.calc(product);
-  }
-
-  calc(prod?: ProductBase) {
-    if (this.isManualMode) return;
-    const currentProduct = prod || this.products.find(p => p.name === this.foodForm.value.name);
-    const weight = this.foodForm.value.weight || 0;
-
-    if (currentProduct) {
-      const ratio = weight / 100;
-      this.foodForm.patchValue({
-        name: currentProduct.name,
-        calories: Math.round(currentProduct.calPer100g * ratio),
-        protein: Number((currentProduct.protPer100g * ratio).toFixed(1)),
-        fat: Number((currentProduct.fatPer100g * ratio).toFixed(1)),
-        carbs: Number((currentProduct.carbPer100g * ratio).toFixed(1))
-      }, { emitEvent: false });
+  onAddEntry(): void {
+    if (!this.selectedProductId) {
+      this.errorMessage = 'Select a product';
+      return;
     }
-  }
 
-  onSubmit() {
-    if (this.foodForm.valid) {
-      this.calorieService.addFood(this.foodForm.value);
-      this.foodForm.patchValue({
-        name: '',
-        weight: 100,
-        calories: null,
-        protein: 0,
-        fat: 0,
-        carbs: 0
+    this.errorMessage = '';
+
+    this.calorieApi
+      .createEntry({
+        product: this.selectedProductId,
+        grams: this.grams,
+        meal_type: this.mealType,
+        date: this.selectedDate,
+      })
+      .subscribe({
+        next: () => {
+          this.selectedProductId = null;
+          this.grams = 100;
+          this.mealType = 'breakfast';
+          this.loadEntriesAndSummary();
+          this.loadProducts();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to add entry';
+        },
       });
-    }
   }
 
-  onDelete(id: string) {
-    this.calorieService.deleteFood(id);
+  onDeleteEntry(id: number): void {
+    this.calorieApi.deleteEntry(id).subscribe({
+      next: () => {
+        this.loadEntriesAndSummary();
+      },
+      error: () => {
+        this.errorMessage = 'Failed to delete entry';
+      },
+    });
+  }
+
+  getMealTypeLabel(mealType: MealType): string {
+    switch (mealType) {
+      case 'breakfast':
+        return 'Breakfast';
+      case 'lunch':
+        return 'Lunch';
+      case 'dinner':
+        return 'Dinner';
+      case 'snack':
+        return 'Snack';
+      default:
+        return mealType;
+    }
   }
 }

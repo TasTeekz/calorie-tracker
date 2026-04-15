@@ -5,7 +5,7 @@
   </nav>
 
   @if (errorMessage) {
-    <section class="card" style="margin-bottom: 20px; border-color: #fca5a5; color: #b91c1c">
+    <section class="card error-card">
       {{ errorMessage }}
     </section>
   }
@@ -38,35 +38,55 @@
     </div>
   </section>
 
-  <section class="card form-card">
-    <div class="meta-inputs">
-      <input
-        type="date"
-        [(ngModel)]="selectedDate"
-        name="selectedDate"
-        (change)="loadEntriesAndSummary()"
-      />
-      <select [(ngModel)]="mealType" name="mealType">
-        <option value="breakfast">Breakfast</option>
-        <option value="lunch">Lunch</option>
-        <option value="dinner">Dinner</option>
-        <option value="snack">Snack</option>
-      </select>
+  <section class="card actions-card">
+    <div class="action-buttons">
+      <button type="button" class="secondary-btn" (click)="openProductModal()">
+        Choose from my products
+      </button>
+      <button type="button" class="secondary-btn" (click)="openManualModal()">
+        Enter manually
+      </button>
     </div>
 
-    <div class="quick-row">
-      <select [(ngModel)]="selectedProductId" name="selectedProductId">
-        <option [ngValue]="null">Выберите продукт...</option>
-        @for (p of products; track p.id) {
-          <option [ngValue]="p.id">{{ p.name }}</option>
-        }
-      </select>
-      <div class="weight-input">
-        <input type="number" [(ngModel)]="grams" name="grams" placeholder="гр." />
+    @if (selectedProduct) {
+      <div class="selected-product">
+        <div>
+          <span class="selected-label">Selected product</span>
+          <h3>{{ selectedProduct.name }}</h3>
+          <p>{{ selectedProduct.calories_per_100g }} kcal / 100g</p>
+        </div>
+
+        <div class="selected-controls">
+          <div class="meta-inputs compact">
+            <input
+              type="date"
+              [(ngModel)]="selectedDate"
+              name="selectedDate"
+              (change)="loadEntriesAndSummary()"
+            />
+            <select [(ngModel)]="mealType" name="mealType">
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="snack">Snack</option>
+            </select>
+          </div>
+
+          <div class="quick-row">
+            <div class="weight-input full-width">
+              <input type="number" [(ngModel)]="grams" name="grams" placeholder="гр." />
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button type="button" class="submit-btn" (click)="onAddEntry()">Add entry</button>
+            <button type="button" class="ghost-btn" (click)="clearSelectedProduct()">Clear</button>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <button type="button" class="submit-btn" (click)="onAddEntry()">Добавить запись</button>
+    } @else {
+      <div class="empty-state">Выберите продукт или введите еду вручную.</div>
+    }
   </section>
 
   <section class="entries-list">
@@ -85,4 +105,104 @@
       </div>
     }
   </section>
+
+  @if (showProductModal) {
+    <div class="modal-backdrop" (click)="closeProductModal()">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Choose a product</h3>
+          <button type="button" class="icon-btn" (click)="closeProductModal()">✕</button>
+        </div>
+
+        <input
+          type="text"
+          class="modal-search"
+          placeholder="Search product"
+          [(ngModel)]="productSearch"
+          name="productSearch"
+        />
+
+        <div class="modal-list">
+          @for (product of filteredProducts; track product.id) {
+            <button type="button" class="modal-item" (click)="chooseProduct(product)">
+              <div>
+                <strong>{{ product.name }}</strong>
+                <p>{{ product.calories_per_100g }} kcal / 100g</p>
+              </div>
+            </button>
+          }
+
+          @if (filteredProducts.length === 0) {
+            <p class="empty-modal">No products found.</p>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (showManualModal) {
+    <div class="modal-backdrop" (click)="closeManualModal()">
+      <div class="modal large" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Enter manually</h3>
+          <button type="button" class="icon-btn" (click)="closeManualModal()">✕</button>
+        </div>
+
+        <div class="modal-grid">
+          <input
+            type="text"
+            placeholder="Product name"
+            [(ngModel)]="manualEntry.entryName"
+            name="entryName"
+          />
+          <input
+            type="number"
+            placeholder="Calories / 100g"
+            [(ngModel)]="manualEntry.caloriesPer100g"
+            name="caloriesPer100g"
+          />
+          <input
+            type="number"
+            placeholder="Protein / 100g"
+            [(ngModel)]="manualEntry.proteinPer100g"
+            name="proteinPer100g"
+          />
+          <input
+            type="number"
+            placeholder="Fat / 100g"
+            [(ngModel)]="manualEntry.fatPer100g"
+            name="fatPer100g"
+          />
+          <input
+            type="number"
+            placeholder="Carbs / 100g"
+            [(ngModel)]="manualEntry.carbsPer100g"
+            name="carbsPer100g"
+          />
+          <input
+            type="number"
+            placeholder="Grams"
+            [(ngModel)]="manualEntry.grams"
+            name="manualGrams"
+          />
+          <select [(ngModel)]="manualEntry.mealType" name="manualMealType">
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+            <option value="snack">Snack</option>
+          </select>
+        </div>
+
+        <label class="checkbox-row">
+          <input type="checkbox" [(ngModel)]="manualEntry.saveProduct" name="saveProduct" />
+          Save this product to my database
+        </label>
+
+        <div class="button-row">
+          <button type="button" class="submit-btn" (click)="onSaveManualEntry()">Save entry</button>
+          <button type="button" class="ghost-btn" (click)="closeManualModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

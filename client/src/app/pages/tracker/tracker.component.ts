@@ -27,6 +27,21 @@ export class TrackerComponent implements OnInit {
   grams = 100;
   mealType: MealType = 'breakfast';
 
+  showProductModal = false;
+  showManualModal = false;
+  productSearch = '';
+
+  manualEntry = {
+    entryName: '',
+    caloriesPer100g: 0,
+    proteinPer100g: 0,
+    fatPer100g: 0,
+    carbsPer100g: 0,
+    grams: 100,
+    mealType: 'breakfast' as MealType,
+    saveProduct: false,
+  };
+
   errorMessage = '';
   loading = false;
 
@@ -44,6 +59,53 @@ export class TrackerComponent implements OnInit {
         this.errorMessage = 'Failed to load products';
       },
     });
+  }
+
+  get filteredProducts(): Product[] {
+    const query = this.productSearch.trim().toLowerCase();
+    if (!query) {
+      return this.products;
+    }
+
+    return this.products.filter((product) => product.name.toLowerCase().includes(query));
+  }
+
+  get selectedProduct(): Product | null {
+    if (this.selectedProductId === null) {
+      return null;
+    }
+
+    return this.products.find((product) => product.id === this.selectedProductId) ?? null;
+  }
+
+  openProductModal(): void {
+    this.productSearch = '';
+    this.showProductModal = true;
+  }
+
+  closeProductModal(): void {
+    this.showProductModal = false;
+  }
+
+  openManualModal(): void {
+    this.resetManualEntry();
+    this.showManualModal = true;
+  }
+
+  closeManualModal(): void {
+    this.showManualModal = false;
+  }
+
+  chooseProduct(product: Product): void {
+    this.selectedProductId = product.id;
+    this.mealType = 'breakfast';
+    this.grams = 100;
+    this.closeProductModal();
+  }
+
+  clearSelectedProduct(): void {
+    this.selectedProductId = null;
+    this.grams = 100;
   }
 
   loadEntriesAndSummary(): void {
@@ -102,6 +164,52 @@ export class TrackerComponent implements OnInit {
           this.errorMessage = 'Failed to add entry';
         },
       });
+  }
+
+  onSaveManualEntry(): void {
+    if (!this.manualEntry.entryName || !this.manualEntry.caloriesPer100g) {
+      this.errorMessage = 'Enter product name and calories';
+      return;
+    }
+
+    this.errorMessage = '';
+
+    this.calorieApi
+      .createEntry({
+        entry_name: this.manualEntry.entryName,
+        calories_per_100g: this.manualEntry.caloriesPer100g,
+        protein_per_100g: this.manualEntry.proteinPer100g,
+        fat_per_100g: this.manualEntry.fatPer100g,
+        carbs_per_100g: this.manualEntry.carbsPer100g,
+        grams: this.manualEntry.grams,
+        meal_type: this.manualEntry.mealType,
+        date: this.selectedDate,
+        save_product: this.manualEntry.saveProduct,
+      })
+      .subscribe({
+        next: () => {
+          this.closeManualModal();
+          this.resetManualEntry();
+          this.loadEntriesAndSummary();
+          this.loadProducts();
+        },
+        error: () => {
+          this.errorMessage = 'Failed to add manual entry';
+        },
+      });
+  }
+
+  resetManualEntry(): void {
+    this.manualEntry = {
+      entryName: '',
+      caloriesPer100g: 0,
+      proteinPer100g: 0,
+      fatPer100g: 0,
+      carbsPer100g: 0,
+      grams: 100,
+      mealType: 'breakfast',
+      saveProduct: false,
+    };
   }
 
   onDeleteEntry(id: number): void {

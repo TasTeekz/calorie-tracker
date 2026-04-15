@@ -8,5 +8,5 @@ from .models import Profile, DailyGoal
 @receiver(post_save, sender=User)
 def create_user_related_objects(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user=instance)
+        Profile.objects.create(user=instance, sex='male')
         DailyGoal.objects.create(user=instance)

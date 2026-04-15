@@ -3,10 +3,16 @@ from django.db import models
 
 
 class Profile(models.Model):
+    SEX_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     age = models.PositiveIntegerField(default=18)
     height = models.PositiveIntegerField(default=170)  # cm
     weight = models.DecimalField(max_digits=5, decimal_places=2, default=70.00)  # kg
+    sex = models.CharField(max_length=10, choices=SEX_CHOICES, default='male')
 
     def __str__(self):
         return f"Profile of {self.user.username}"
@@ -45,23 +51,56 @@ class MealEntry(models.Model):
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='meal_entries')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='meal_entries')
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name='meal_entries')
+    entry_name = models.CharField(max_length=255, default='')
+    calories_per_100g = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    protein_per_100g = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    fat_per_100g = models.DecimalField(max_digits=7, decimal_places=2, default=0)
+    carbs_per_100g = models.DecimalField(max_digits=7, decimal_places=2, default=0)
     grams = models.DecimalField(max_digits=7, decimal_places=2)
     meal_type = models.CharField(max_length=20, choices=MEAL_TYPES, default='breakfast')
     date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def calculated_calories(self):
-        return round((self.product.calories_per_100g * self.grams) / 100, 2)
+        return round((self._calories_per_100g() * self.grams) / 100, 2)
 
     def calculated_protein(self):
-        return round((self.product.protein_per_100g * self.grams) / 100, 2)
+        return round((self._protein_per_100g() * self.grams) / 100, 2)
 
     def calculated_fat(self):
-        return round((self.product.fat_per_100g * self.grams) / 100, 2)
+        return round((self._fat_per_100g() * self.grams) / 100, 2)
 
     def calculated_carbs(self):
-        return round((self.product.carbs_per_100g * self.grams) / 100, 2)
+        return round((self._carbs_per_100g() * self.grams) / 100, 2)
+
+    def _calories_per_100g(self):
+        if self.calories_per_100g:
+            return self.calories_per_100g
+        if self.product:
+            return self.product.calories_per_100g
+        return 0
+
+    def _protein_per_100g(self):
+        if self.protein_per_100g:
+            return self.protein_per_100g
+        if self.product:
+            return self.product.protein_per_100g
+        return 0
+
+    def _fat_per_100g(self):
+        if self.fat_per_100g:
+            return self.fat_per_100g
+        if self.product:
+            return self.product.fat_per_100g
+        return 0
+
+    def _carbs_per_100g(self):
+        if self.carbs_per_100g:
+            return self.carbs_per_100g
+        if self.product:
+            return self.product.carbs_per_100g
+        return 0
 
     def __str__(self):
-        return f"{self.user.username} - {self.product.name} ({self.grams}g)"
+        return f"{self.user.username} - {self.entry_name} ({self.grams}g)"

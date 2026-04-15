@@ -2,8 +2,13 @@ export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
 export interface MealEntry {
   id: number;
-  product: number;
+  product: number | null;
   product_name: string;
+  entry_name: string;
+  calories_per_100g: number;
+  protein_per_100g: number;
+  fat_per_100g: number;
+  carbs_per_100g: number;
   grams: number;
   meal_type: MealType;
   date: string;
@@ -15,10 +20,16 @@ export interface MealEntry {
 }
 
 export interface MealEntryCreateRequest {
-  product: number;
+  product?: number | null;
+  entry_name?: string;
+  calories_per_100g?: number;
+  protein_per_100g?: number;
+  fat_per_100g?: number;
+  carbs_per_100g?: number;
   grams: number;
   meal_type: MealType;
   date: string;
+  save_product?: boolean;
 }
 
 export interface DailySummary {

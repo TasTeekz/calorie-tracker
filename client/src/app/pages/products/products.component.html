@@ -1,0 +1,45 @@
+<div class="products-page">
+  <h2>Products</h2>
+
+  @if (errorMessage) {
+    <p class="error">{{ errorMessage }}</p>
+  }
+
+  <div class="form-card">
+    <label for="name">Name</label>
+    <input id="name" [(ngModel)]="newProduct.name" name="name" type="text" />
+
+    <label for="calories">Calories / 100g</label>
+    <input id="calories" [(ngModel)]="newProduct.calories_per_100g" name="calories" type="number" />
+
+    <label for="protein">Protein / 100g</label>
+    <input id="protein" [(ngModel)]="newProduct.protein_per_100g" name="protein" type="number" />
+
+    <label for="fat">Fat / 100g</label>
+    <input id="fat" [(ngModel)]="newProduct.fat_per_100g" name="fat" type="number" />
+
+    <label for="carbs">Carbs / 100g</label>
+    <input id="carbs" [(ngModel)]="newProduct.carbs_per_100g" name="carbs" type="number" />
+
+    @if (!editingId) {
+      <button (click)="onCreateProduct()">Create</button>
+    } @else {
+      <button (click)="onUpdateProduct()">Update</button>
+    }
+  </div>
+
+  <div class="list">
+    @for (product of products; track product.id) {
+      <div class="item">
+        <div>
+          <strong>{{ product.name }}</strong>
+          <p>{{ product.calories_per_100g }} kcal | P: {{ product.protein_per_100g }} | F: {{ product.fat_per_100g }} | C: {{ product.carbs_per_100g }}</p>
+        </div>
+        <div class="actions">
+          <button (click)="onEditProduct(product)">Edit</button>
+          <button class="danger" (click)="onDeleteProduct(product.id)">Delete</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

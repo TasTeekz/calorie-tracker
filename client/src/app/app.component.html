@@ -1,0 +1,15 @@
+<div class="app-shell">
+  @if (isLoggedIn()) {
+    <nav class="navbar">
+      <a routerLink="/tracker">Tracker</a>
+      <a routerLink="/history">History</a>
+      <a routerLink="/products">Products</a>
+      <a routerLink="/profile">Profile</a>
+      <button (click)="onLogout()">Logout</button>
+    </nav>
+  }
+
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

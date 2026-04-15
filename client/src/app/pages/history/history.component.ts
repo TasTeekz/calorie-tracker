@@ -1,52 +1,84 @@
-import { Component, inject } from '@angular/core'; // Добавили inject
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { CalorieService } from '../../services/calorie.service';
-import { map } from 'rxjs';
-import { FoodItem } from '../../models/food-item.model';
+import { FormsModule } from '@angular/forms';
 
-interface DaySummary {
-  date: string;
-  totalCalories: number;
-  items: FoodItem[];
-  isOpen: boolean;
-}
+import { CalorieApiService } from '../../services/calorie-api.service';
+import { MealEntry, DailySummary } from '../../models/entry.model';
 
 @Component({
   selector: 'app-history',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './history.component.html',
-  styleUrls: ['./history.component.css']
+  styleUrl: './history.component.css'
 })
-export class HistoryComponent {
-  // Используем inject() для мгновенной инициализации сервиса
-  public calorieService = inject(CalorieService);
+export class HistoryComponent implements OnInit {
+  private calorieApi = inject(CalorieApiService);
 
-  history$ = this.calorieService.foodItems$.pipe(
-    map(items => {
-      const groups = items.reduce((acc, item) => {
-        if (!acc[item.date]) {
-          acc[item.date] = { 
-            date: item.date, 
-            totalCalories: 0, 
-            items: [], 
-            isOpen: false 
-          };
-        }
-        acc[item.date].items.push(item);
-        acc[item.date].totalCalories += item.calories;
-        return acc;
-      }, {} as Record<string, DaySummary>);
+  selectedDate = new Date().toISOString().split('T')[0];
+  entries: MealEntry[] = [];
+  summary: DailySummary | null = null;
+  errorMessage = '';
+  loading = false;
 
-      return Object.values(groups).sort((a, b) => b.date.localeCompare(a.date));
-    })
-  );
+  ngOnInit(): void {
+    this.loadHistory();
+  }
 
-  // Конструктор теперь можно оставить пустым или вообще удалить
-  constructor() {}
+  loadHistory(): void {
+    this.loading = true;
+    this.errorMessage = '';
 
-  toggleDay(day: DaySummary) {
-    day.isOpen = !day.isOpen;
+    this.calorieApi.getEntries(this.selectedDate).subscribe({
+      next: (entries) => {
+        this.entries = entries;
+
+        this.calorieApi.getDailySummary(this.selectedDate).subscribe({
+          next: (summary) => {
+            this.summary = summary;
+            this.loading = false;
+          },
+          error: () => {
+            this.summary = null;
+            this.errorMessage = 'Failed to load summary';
+            this.loading = false;
+          }
+        });
+      },
+      error: () => {
+        this.entries = [];
+        this.summary = null;
+        this.errorMessage = 'Failed to load history';
+        this.loading = false;
+      }
+    });
+  }
+
+  onDeleteEntry(id: number): void {
+    this.errorMessage = '';
+
+    this.calorieApi.deleteEntry(id).subscribe({
+      next: () => {
+        this.loadHistory();
+      },
+      error: () => {
+        this.errorMessage = 'Failed to delete entry';
+      }
+    });
+  }
+
+  getMealTypeLabel(mealType: string): string {
+    switch (mealType) {
+      case 'breakfast':
+        return 'Breakfast';
+      case 'lunch':
+        return 'Lunch';
+      case 'dinner':
+        return 'Dinner';
+      case 'snack':
+        return 'Snack';
+      default:
+        return mealType;
+    }
   }
 }

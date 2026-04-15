@@ -1,0 +1,32 @@
+.app-shell {
+  min-height: 100vh;
+  background: #f5f7fb;
+}
+
+.navbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  background: #1f2937;
+  padding: 16px 24px;
+}
+
+.navbar a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.navbar button {
+  margin-left: auto;
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.content {
+  padding: 24px;
+}

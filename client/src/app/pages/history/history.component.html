@@ -1,32 +1,58 @@
-<div class="history-container">
-  <nav class="history-nav">
-    <button routerLink="/" class="back-btn">← Назад к трекеру</button>
-    <h2>Архив питания</h2>
-  </nav>
+<div class="history-page">
+  <h2>History</h2>
 
-  <div class="empty-state" *ngIf="(history$ | async)?.length === 0">
-    <p>История пока пуста. Начните записывать еду в трекере!</p>
+  <div class="date-box">
+    <label for="historyDate">Choose date:</label>
+    <input
+      id="historyDate"
+      type="date"
+      [(ngModel)]="selectedDate"
+      name="selectedDate"
+      (change)="loadHistory()"
+    />
   </div>
 
-  <div class="days-list">
-    <div class="day-card" *ngFor="let day of (history$ | async)">
-      <div class="day-header" (click)="toggleDay(day)">
-        <div class="date-info">
-          <strong>{{ day.date | date:'longDate' }}</strong>
-        </div>
-        <div class="calories-info">
-          <span class="total-badge">{{ day.totalCalories }} ккал</span>
-          <span class="arrow" [class.rotated]="day.isOpen">▼</span>
-        </div>
-      </div>
+  @if (errorMessage) {
+    <p class="error">{{ errorMessage }}</p>
+  }
 
-      <div class="day-details" *ngIf="day.isOpen">
-        <div class="item-row" *ngFor="let item of day.items">
-          <span class="meal-tag">{{ item.mealType }}</span>
-          <span class="item-name">{{ item.name }}</span>
-          <span class="item-cals">{{ item.calories }} ккал</span>
-        </div>
-      </div>
+  @if (loading) {
+    <p>Loading...</p>
+  }
+
+  @if (!loading && summary) {
+    <div class="summary-card">
+      <h3>Daily Summary</h3>
+      <p><strong>Calories:</strong> {{ summary.total_calories }}</p>
+      <p><strong>Protein:</strong> {{ summary.total_protein }} g</p>
+      <p><strong>Fat:</strong> {{ summary.total_fat }} g</p>
+      <p><strong>Carbs:</strong> {{ summary.total_carbs }} g</p>
     </div>
+  }
+
+  <div class="entries-section">
+    <h3>Meal Entries</h3>
+
+    @if (entries.length > 0) {
+      <div class="entry-list">
+        @for (entry of entries; track entry.id) {
+          <div class="entry-card">
+            <div>
+              <p><strong>{{ entry.product_name }}</strong></p>
+              <p>{{ getMealTypeLabel(entry.meal_type) }}</p>
+              <p>{{ entry.grams }} g</p>
+              <p>{{ entry.calories }} kcal</p>
+              <p>P: {{ entry.protein }} | F: {{ entry.fat }} | C: {{ entry.carbs }}</p>
+            </div>
+
+            <button class="delete-btn" (click)="onDeleteEntry(entry.id)">
+              Delete
+            </button>
+          </div>
+        }
+      </div>
+    } @else {
+      <p>No entries found for this date.</p>
+    }
   </div>
 </div>

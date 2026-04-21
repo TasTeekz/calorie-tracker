@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -15,76 +15,76 @@ import { ProfileGoalResponse } from '../../models/profile.model';
 export class ProfileComponent implements OnInit {
   private calorieApi = inject(CalorieApiService);
 
-  age = 18;
-  height = 170;
-  weight = 70;
-  gender: 'male' | 'female' = 'male';
-  role: 'USER' | 'ADMIN' = 'USER';
+  age = signal(18);
+  height = signal(170);
+  weight = signal(70);
+  gender = signal<'male' | 'female'>('male');
+  role = signal<'USER' | 'ADMIN'>('USER');
 
-  calorie_goal = 2000;
-  protein_goal = 120;
-  fat_goal = 70;
-  carbs_goal = 200;
+  calorie_goal = signal(2000);
+  protein_goal = signal(120);
+  fat_goal = signal(70);
+  carbs_goal = signal(200);
 
-  successMessage = '';
-  errorMessage = '';
-  loading = false;
+  successMessage = signal('');
+  errorMessage = signal('');
+  loading = signal(false);
 
   ngOnInit(): void {
     this.loadProfile();
   }
 
   loadProfile(): void {
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
     this.calorieApi.getProfile().subscribe({
       next: (data: ProfileGoalResponse) => {
-        this.age = data.profile.age;
-        this.height = data.profile.height;
-        this.weight = data.profile.weight;
-        this.gender = data.profile.gender;
-        this.role = data.profile.role;
+        this.age.set(data.profile.age);
+        this.height.set(data.profile.height);
+        this.weight.set(data.profile.weight);
+        this.gender.set(data.profile.gender);
+        this.role.set(data.profile.role);
 
-        this.calorie_goal = data.daily_goal.calorie_goal;
-        this.protein_goal = data.daily_goal.protein_goal;
-        this.fat_goal = data.daily_goal.fat_goal;
-        this.carbs_goal = data.daily_goal.carbs_goal;
+        this.calorie_goal.set(data.daily_goal.calorie_goal);
+        this.protein_goal.set(data.daily_goal.protein_goal);
+        this.fat_goal.set(data.daily_goal.fat_goal);
+        this.carbs_goal.set(data.daily_goal.carbs_goal);
 
-        this.loading = false;
+        this.loading.set(false);
       },
       error: () => {
-        this.errorMessage = 'Failed to load profile';
-        this.loading = false;
+        this.errorMessage.set('Failed to load profile');
+        this.loading.set(false);
       },
     });
   }
 
   onSave(): void {
-    this.successMessage = '';
-    this.errorMessage = '';
+    this.successMessage.set('');
+    this.errorMessage.set('');
 
     this.calorieApi
       .updateProfile({
         profile: {
-          age: this.age,
-          height: this.height,
-          weight: this.weight,
-          gender: this.gender,
+          age: this.age(),
+          height: this.height(),
+          weight: this.weight(),
+          gender: this.gender(),
         },
         daily_goal: {
-          calorie_goal: this.calorie_goal,
-          protein_goal: this.protein_goal,
-          fat_goal: this.fat_goal,
-          carbs_goal: this.carbs_goal,
+          calorie_goal: this.calorie_goal(),
+          protein_goal: this.protein_goal(),
+          fat_goal: this.fat_goal(),
+          carbs_goal: this.carbs_goal(),
         },
       })
       .subscribe({
         next: () => {
-          this.successMessage = 'Profile updated successfully';
+          this.successMessage.set('Profile updated successfully');
         },
         error: () => {
-          this.errorMessage = 'Failed to update profile';
+          this.errorMessage.set('Failed to update profile');
         },
       });
   }

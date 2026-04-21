@@ -1,48 +1,82 @@
-<div class="products-page">
-  <h2>Products</h2>
+<div class="page products-page">
+  <header class="page-header">
+    <h2 class="page-title">Products</h2>
+    <p class="page-subtitle">Manage your custom food database with calories and macros per 100g.</p>
+  </header>
 
-  @if (errorMessage) {
-    <p class="error">{{ errorMessage }}</p>
+  @if (errorMessage()) {
+    <p class="status-error">{{ errorMessage() }}</p>
   }
 
-  <div class="form-card">
-    <label for="name">Name</label>
-    <input id="name" [(ngModel)]="newProduct.name" name="name" type="text" />
+  @if (loading()) {
+    <p class="status-info">Loading products...</p>
+  }
 
-    <label for="calories">Calories / 100g</label>
-    <input id="calories" [(ngModel)]="newProduct.calories_per_100g" name="calories" type="number" />
+  <section class="form-card surface-card">
+    <h3>{{ editingId() ? 'Update product' : 'Add product' }}</h3>
+    <div class="form-grid">
+      <div>
+        <label for="name">Name</label>
+        <input id="name" [(ngModel)]="newProduct.name" name="name" type="text" />
+      </div>
 
-    <label for="protein">Protein / 100g</label>
-    <input id="protein" [(ngModel)]="newProduct.protein_per_100g" name="protein" type="number" />
+      <div>
+        <label for="calories">Calories / 100g</label>
+        <input
+          id="calories"
+          [(ngModel)]="newProduct.calories_per_100g"
+          name="calories"
+          type="number"
+        />
+      </div>
 
-    <label for="fat">Fat / 100g</label>
-    <input id="fat" [(ngModel)]="newProduct.fat_per_100g" name="fat" type="number" />
+      <div>
+        <label for="protein">Protein / 100g</label>
+        <input
+          id="protein"
+          [(ngModel)]="newProduct.protein_per_100g"
+          name="protein"
+          type="number"
+        />
+      </div>
 
-    <label for="carbs">Carbs / 100g</label>
-    <input id="carbs" [(ngModel)]="newProduct.carbs_per_100g" name="carbs" type="number" />
+      <div>
+        <label for="fat">Fat / 100g</label>
+        <input id="fat" [(ngModel)]="newProduct.fat_per_100g" name="fat" type="number" />
+      </div>
 
-    @if (!editingId) {
-      <button (click)="onCreateProduct()">Create</button>
-    } @else {
-      <button (click)="onUpdateProduct()">Update</button>
-    }
-  </div>
+      <div>
+        <label for="carbs">Carbs / 100g</label>
+        <input id="carbs" [(ngModel)]="newProduct.carbs_per_100g" name="carbs" type="number" />
+      </div>
+    </div>
 
-  <div class="list">
-    @for (product of products; track product.id) {
-      <div class="item">
-        <div>
+    <div class="form-actions">
+      @if (!editingId()) {
+        <button class="btn btn-primary" (click)="onCreateProduct()">Create</button>
+      } @else {
+        <button class="btn btn-primary" (click)="onUpdateProduct()">Update</button>
+      }
+    </div>
+  </section>
+
+  <section class="list">
+    @for (product of products(); track product.id) {
+      <article class="item surface-card">
+        <div class="item-main">
           <strong>{{ product.name }}</strong>
-          <p>
-            {{ product.calories_per_100g }} kcal | P: {{ product.protein_per_100g }} | F:
-            {{ product.fat_per_100g }} | C: {{ product.carbs_per_100g }}
-          </p>
+          <div class="chips-row">
+            <span class="chip">{{ product.calories_per_100g }} kcal</span>
+            <span class="chip">P {{ product.protein_per_100g }}</span>
+            <span class="chip">F {{ product.fat_per_100g }}</span>
+            <span class="chip">C {{ product.carbs_per_100g }}</span>
+          </div>
         </div>
         <div class="actions">
-          <button (click)="onEditProduct(product)">Edit</button>
-          <button class="danger" (click)="onDeleteProduct(product.id)">Delete</button>
+          <button class="btn btn-secondary" (click)="onEditProduct(product)">Edit</button>
+          <button class="btn btn-danger" (click)="onDeleteProduct(product.id)">Delete</button>
         </div>
-      </div>
+      </article>
     }
-  </div>
+  </section>
 </div>

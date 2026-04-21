@@ -29,7 +29,8 @@ logger = logging.getLogger(__name__)
 def register_view(request):
     serializer = RegisterSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
+        user = serializer.save()
+        logger.debug('Register user_id=%s username=%s', user.id, user.username)
         return Response({
             'message': 'User registered successfully',
         }, status=status.HTTP_201_CREATED)

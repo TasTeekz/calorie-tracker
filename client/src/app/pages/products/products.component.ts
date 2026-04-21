@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -15,8 +15,9 @@ import { Product } from '../../models/product.model';
 export class ProductsComponent implements OnInit {
   private calorieApi = inject(CalorieApiService);
 
-  products: Product[] = [];
-  errorMessage = '';
+  products = signal<Product[]>([]);
+  errorMessage = signal('');
+  loading = signal(false);
 
   newProduct = {
     name: '',
@@ -26,25 +27,28 @@ export class ProductsComponent implements OnInit {
     carbs_per_100g: 0,
   };
 
-  editingId: number | null = null;
+  editingId = signal<number | null>(null);
 
   ngOnInit(): void {
     this.loadProducts();
   }
 
   loadProducts(): void {
+    this.loading.set(true);
     this.calorieApi.getProducts().subscribe({
       next: (data) => {
-        this.products = data;
+        this.products.set(data);
+        this.loading.set(false);
       },
       error: () => {
-        this.errorMessage = 'Failed to load products';
+        this.errorMessage.set('Failed to load products');
+        this.loading.set(false);
       },
     });
   }
 
   onCreateProduct(): void {
-    this.errorMessage = '';
+    this.errorMessage.set('');
 
     this.calorieApi.createProduct(this.newProduct).subscribe({
       next: () => {
@@ -58,7 +62,7 @@ export class ProductsComponent implements OnInit {
         this.loadProducts();
       },
       error: () => {
-        this.errorMessage = 'Failed to create product';
+        this.errorMessage.set('Failed to create product');
       },
     });
   }
@@ -69,13 +73,13 @@ export class ProductsComponent implements OnInit {
         this.loadProducts();
       },
       error: () => {
-        this.errorMessage = 'Failed to delete product';
+        this.errorMessage.set('Failed to delete product');
       },
     });
   }
 
   onEditProduct(product: Product): void {
-    this.editingId = product.id;
+    this.editingId.set(product.id);
     this.newProduct = {
       name: product.name,
       calories_per_100g: product.calories_per_100g,
@@ -86,11 +90,11 @@ export class ProductsComponent implements OnInit {
   }
 
   onUpdateProduct(): void {
-    if (!this.editingId) return;
+    if (!this.editingId()) return;
 
-    this.calorieApi.updateProduct(this.editingId, this.newProduct).subscribe({
+    this.calorieApi.updateProduct(this.editingId()!, this.newProduct).subscribe({
       next: () => {
-        this.editingId = null;
+        this.editingId.set(null);
         this.newProduct = {
           name: '',
           calories_per_100g: 0,
@@ -101,7 +105,7 @@ export class ProductsComponent implements OnInit {
         this.loadProducts();
       },
       error: () => {
-        this.errorMessage = 'Failed to update product';
+        this.errorMessage.set('Failed to update product');
       },
     });
   }

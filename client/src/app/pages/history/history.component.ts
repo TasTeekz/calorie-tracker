@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -15,54 +15,54 @@ import { MealEntry, DailySummary } from '../../models/entry.model';
 export class HistoryComponent implements OnInit {
   private calorieApi = inject(CalorieApiService);
 
-  selectedDate = new Date().toISOString().split('T')[0];
-  entries: MealEntry[] = [];
-  summary: DailySummary | null = null;
-  errorMessage = '';
-  loading = false;
+  selectedDate = signal(new Date().toISOString().split('T')[0]);
+  entries = signal<MealEntry[]>([]);
+  summary = signal<DailySummary | null>(null);
+  errorMessage = signal('');
+  loading = signal(false);
 
   ngOnInit(): void {
     this.loadHistory();
   }
 
   loadHistory(): void {
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
-    this.calorieApi.getEntries(this.selectedDate).subscribe({
+    this.calorieApi.getEntries(this.selectedDate()).subscribe({
       next: (entries) => {
-        this.entries = entries;
+        this.entries.set(entries);
 
-        this.calorieApi.getDailySummary(this.selectedDate).subscribe({
+        this.calorieApi.getDailySummary(this.selectedDate()).subscribe({
           next: (summary) => {
-            this.summary = summary;
-            this.loading = false;
+            this.summary.set(summary);
+            this.loading.set(false);
           },
           error: () => {
-            this.summary = null;
-            this.errorMessage = 'Failed to load summary';
-            this.loading = false;
+            this.summary.set(null);
+            this.errorMessage.set('Failed to load summary');
+            this.loading.set(false);
           },
         });
       },
       error: () => {
-        this.entries = [];
-        this.summary = null;
-        this.errorMessage = 'Failed to load history';
-        this.loading = false;
+        this.entries.set([]);
+        this.summary.set(null);
+        this.errorMessage.set('Failed to load history');
+        this.loading.set(false);
       },
     });
   }
 
   onDeleteEntry(id: number): void {
-    this.errorMessage = '';
+    this.errorMessage.set('');
 
     this.calorieApi.deleteEntry(id).subscribe({
       next: () => {
         this.loadHistory();
       },
       error: () => {
-        this.errorMessage = 'Failed to delete entry';
+        this.errorMessage.set('Failed to delete entry');
       },
     });
   }

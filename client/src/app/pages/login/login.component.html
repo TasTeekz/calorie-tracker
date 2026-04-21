@@ -1,26 +1,32 @@
-<div class="login-page">
-  <h2>Login</h2>
-
-  <form (ngSubmit)="onLogin()">
-    <div class="field">
-      <label for="username">Username</label>
-      <input id="username" [(ngModel)]="username" name="username" type="text" required />
+<div class="auth-page">
+  <section class="auth-card surface-card">
+    <div class="auth-header">
+      <span class="chip">Welcome back</span>
+      <h2>Login</h2>
+      <p>Continue to your nutrition dashboard and daily progress.</p>
     </div>
 
-    <div class="field">
-      <label for="password">Password</label>
-      <input id="password" [(ngModel)]="password" name="password" type="password" required />
-    </div>
+    <form class="auth-form" (ngSubmit)="onLogin()">
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" [(ngModel)]="username" name="username" type="text" required />
+      </div>
 
-    <button type="submit">Login</button>
-  </form>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" [(ngModel)]="password" name="password" type="password" required />
+      </div>
 
-  @if (errorMessage) {
-    <p class="error">{{ errorMessage }}</p>
-  }
+      <button class="btn btn-primary" type="submit">Login</button>
+    </form>
 
-  <p>
-    Don't have an account?
-    <a routerLink="/register">Register</a>
-  </p>
+    @if (errorMessage) {
+      <p class="status-error">{{ errorMessage }}</p>
+    }
+
+    <p class="auth-link">
+      Don't have an account?
+      <a routerLink="/register">Create one</a>
+    </p>
+  </section>
 </div>

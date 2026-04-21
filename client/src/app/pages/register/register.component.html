@@ -1,40 +1,52 @@
-<div class="register-page">
-  <h2>Register</h2>
-
-  <form (ngSubmit)="onRegister()">
-    <div>
-      <label>Username</label>
-      <input type="text" name="username" [(ngModel)]="username" required />
+<div class="auth-page">
+  <section class="auth-card surface-card">
+    <div class="auth-header">
+      <span class="chip">Get started</span>
+      <h2>Create account</h2>
+      <p>Set up your profile and start tracking calories and macros.</p>
     </div>
 
-    <div>
-      <label>Name</label>
-      <input type="text" name="name" [(ngModel)]="name" required />
-    </div>
+    <form class="auth-form" (ngSubmit)="onRegister()">
+      <div class="field">
+        <label for="username">Username</label>
+        <input id="username" type="text" name="username" [(ngModel)]="username" required />
+      </div>
 
-    <div>
-      <label>Password</label>
-      <input type="password" name="password" [(ngModel)]="password" required />
-    </div>
+      <div class="field">
+        <label for="name">Name</label>
+        <input id="name" type="text" name="name" [(ngModel)]="name" required />
+      </div>
 
-    <div>
-      <label>Confirm password</label>
-      <input type="password" name="confirmPassword" [(ngModel)]="confirmPassword" required />
-    </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input id="password" type="password" name="password" [(ngModel)]="password" required />
+      </div>
 
-    <button type="submit">Register</button>
-  </form>
+      <div class="field">
+        <label for="confirmPassword">Confirm password</label>
+        <input
+          id="confirmPassword"
+          type="password"
+          name="confirmPassword"
+          [(ngModel)]="confirmPassword"
+          required
+        />
+      </div>
 
-  @if (errorMessage) {
-    <p class="error">{{ errorMessage }}</p>
-  }
+      <button class="btn btn-primary" type="submit">Register</button>
+    </form>
 
-  @if (successMessage) {
-    <p class="success">{{ successMessage }}</p>
-  }
+    @if (errorMessage) {
+      <p class="status-error">{{ errorMessage }}</p>
+    }
 
-  <p>
-    Already have an account?
-    <a routerLink="/login">Login</a>
-  </p>
+    @if (successMessage) {
+      <p class="status-success">{{ successMessage }}</p>
+    }
+
+    <p class="auth-link">
+      Already have an account?
+      <a routerLink="/login">Login</a>
+    </p>
+  </section>
 </div>

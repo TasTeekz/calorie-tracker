@@ -1,32 +1,101 @@
 .app-shell {
   min-height: 100vh;
-  background: #f5f7fb;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(8px);
+  background: rgba(243, 247, 251, 0.85);
+  border-bottom: 1px solid #d7e2ec;
+}
+
+.topbar-inner {
+  width: min(1100px, calc(100% - 28px));
+  margin: 0 auto;
+  min-height: 82px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #0f9d8d, #f59f42);
+  box-shadow: 0 0 0 6px rgba(15, 157, 141, 0.16);
+}
+
+.brand h1 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.brand p {
+  font-size: 0.78rem;
+  color: #5c6f82;
 }
 
 .navbar {
   display: flex;
-  gap: 16px;
+  gap: 8px;
   align-items: center;
-  background: #1f2937;
-  padding: 16px 24px;
+  flex-wrap: wrap;
 }
 
 .navbar a {
-  color: white;
+  color: #204056;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
 }
 
-.navbar button {
-  margin-left: auto;
-  background: #ef4444;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 8px;
+.navbar a:hover {
+  background: #eaf2f8;
+  border-color: #d7e2ec;
+}
+
+.navbar a.active {
+  background: #ffffff;
+  border-color: #c8d9e7;
+  box-shadow: 0 6px 16px rgba(16, 32, 49, 0.08);
+}
+
+.logout-btn {
+  background: #fff1f1;
+  color: #be4b4b;
+  border: 1px solid #f3cdcd;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-weight: 700;
   cursor: pointer;
 }
 
 .content {
-  padding: 24px;
+  width: min(1100px, calc(100% - 28px));
+  margin: 28px auto;
+}
+
+@media (max-width: 900px) {
+  .topbar-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 0;
+  }
+
+  .content {
+    margin: 20px auto;
+  }
 }

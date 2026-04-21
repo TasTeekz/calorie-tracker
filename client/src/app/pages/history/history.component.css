@@ -1,22 +1,61 @@
-.history-page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+.date-card {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.date-box {
-  margin-bottom: 20px;
+.date-card label {
+  font-size: 0.84rem;
+  color: var(--text-muted);
+  font-weight: 700;
 }
 
 .summary-card {
-  background: #f4f6f8;
-  padding: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-card h3 {
+  font-size: 1.05rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metric {
+  border: 1px solid var(--line);
   border-radius: 12px;
-  margin-bottom: 24px;
+  background: var(--surface-strong);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.metric span {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.metric b {
+  font-size: 1.05rem;
 }
 
 .entries-section {
-  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.entries-section h3 {
+  font-size: 1.05rem;
 }
 
 .entry-list {
@@ -29,22 +68,28 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 14px;
 }
 
-.delete-btn {
-  background: #d9534f;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  border-radius: 8px;
-  cursor: pointer;
+.entry-main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.error {
-  color: #d9534f;
-  margin-bottom: 12px;
+.entry-meta {
+  color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
+.entry-nutrition {
+  font-size: 0.87rem;
+  color: #2a4a60;
+}
+
+@media (max-width: 820px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

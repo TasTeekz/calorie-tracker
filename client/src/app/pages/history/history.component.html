@@ -1,58 +1,77 @@
-<div class="history-page">
-  <h2>History</h2>
+<div class="page history-page">
+  <header class="page-header">
+    <h2 class="page-title">History</h2>
+    <p class="page-subtitle">Review your meal log and totals for any date.</p>
+  </header>
 
-  <div class="date-box">
-    <label for="historyDate">Choose date:</label>
+  <section class="surface-card date-card">
+    <label for="historyDate">Choose date</label>
     <input
       id="historyDate"
       type="date"
-      [(ngModel)]="selectedDate"
+      [ngModel]="selectedDate()"
+      (ngModelChange)="selectedDate.set($event)"
       name="selectedDate"
       (change)="loadHistory()"
     />
-  </div>
+  </section>
 
-  @if (errorMessage) {
-    <p class="error">{{ errorMessage }}</p>
+  @if (errorMessage()) {
+    <p class="status-error">{{ errorMessage() }}</p>
   }
 
-  @if (loading) {
-    <p>Loading...</p>
+  @if (loading()) {
+    <p class="status-info">Loading history...</p>
   }
 
-  @if (!loading && summary) {
-    <div class="summary-card">
+  @if (!loading() && summary()) {
+    <section class="surface-card summary-card">
       <h3>Daily Summary</h3>
-      <p><strong>Calories:</strong> {{ summary.total_calories }}</p>
-      <p><strong>Protein:</strong> {{ summary.total_protein }} g</p>
-      <p><strong>Fat:</strong> {{ summary.total_fat }} g</p>
-      <p><strong>Carbs:</strong> {{ summary.total_carbs }} g</p>
-    </div>
+      <div class="summary-grid">
+        <div class="metric">
+          <span>Calories</span>
+          <b>{{ summary()!.total_calories }}</b>
+        </div>
+        <div class="metric">
+          <span>Protein</span>
+          <b>{{ summary()!.total_protein }} g</b>
+        </div>
+        <div class="metric">
+          <span>Fat</span>
+          <b>{{ summary()!.total_fat }} g</b>
+        </div>
+        <div class="metric">
+          <span>Carbs</span>
+          <b>{{ summary()!.total_carbs }} g</b>
+        </div>
+      </div>
+    </section>
   }
 
-  <div class="entries-section">
+  <section class="entries-section">
     <h3>Meal Entries</h3>
 
-    @if (entries.length > 0) {
+    @if (entries().length > 0) {
       <div class="entry-list">
-        @for (entry of entries; track entry.id) {
-          <div class="entry-card">
-            <div>
-              <p>
-                <strong>{{ entry.product_name }}</strong>
+        @for (entry of entries(); track entry.id) {
+          <article class="entry-card surface-card">
+            <div class="entry-main">
+              <strong>{{ entry.product_name }}</strong>
+              <p class="entry-meta">
+                {{ getMealTypeLabel(entry.meal_type) }} • {{ entry.grams }} g
               </p>
-              <p>{{ getMealTypeLabel(entry.meal_type) }}</p>
-              <p>{{ entry.grams }} g</p>
-              <p>{{ entry.calories }} kcal</p>
-              <p>P: {{ entry.protein }} | F: {{ entry.fat }} | C: {{ entry.carbs }}</p>
+              <p class="entry-nutrition">
+                {{ entry.calories }} kcal • P {{ entry.protein }} • F {{ entry.fat }} • C
+                {{ entry.carbs }}
+              </p>
             </div>
 
-            <button class="delete-btn" (click)="onDeleteEntry(entry.id)">Delete</button>
-          </div>
+            <button class="btn btn-danger" (click)="onDeleteEntry(entry.id)">Delete</button>
+          </article>
         }
       </div>
     } @else {
-      <p>No entries found for this date.</p>
+      <p class="status-info">No entries found for this date.</p>
     }
-  </div>
+  </section>
 </div>

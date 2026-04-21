@@ -1,54 +1,121 @@
-<div class="profile-page">
-  <h2>Profile & Goals</h2>
+<div class="page profile-page">
+  <header class="page-header">
+    <h2 class="page-title">Profile & Goals</h2>
+    <p class="page-subtitle">Personalize your profile and adjust daily macro targets.</p>
+  </header>
 
-  @if (loading) {
-    <p>Loading...</p>
+  @if (loading()) {
+    <p class="status-info">Loading profile...</p>
   }
 
-  @if (errorMessage) {
-    <p class="error">{{ errorMessage }}</p>
+  @if (errorMessage()) {
+    <p class="status-error">{{ errorMessage() }}</p>
   }
 
-  @if (successMessage) {
-    <p class="success">{{ successMessage }}</p>
+  @if (successMessage()) {
+    <p class="status-success">{{ successMessage() }}</p>
   }
 
-  <div class="form-card">
+  <section class="form-card surface-card">
     <h3>Profile</h3>
 
-    <p><strong>Role:</strong> {{ role }}</p>
+    <p class="role-pill"><strong>Role:</strong> {{ role() }}</p>
 
-    <label for="age">Age</label>
-    <input id="age" type="number" [(ngModel)]="age" name="age" />
+    <div class="form-grid">
+      <div>
+        <label for="age">Age</label>
+        <input
+          id="age"
+          type="number"
+          [ngModel]="age()"
+          (ngModelChange)="age.set($event)"
+          name="age"
+        />
+      </div>
 
-    <label for="height">Height (cm)</label>
-    <input id="height" type="number" [(ngModel)]="height" name="height" />
+      <div>
+        <label for="height">Height (cm)</label>
+        <input
+          id="height"
+          type="number"
+          [ngModel]="height()"
+          (ngModelChange)="height.set($event)"
+          name="height"
+        />
+      </div>
 
-    <label for="weight">Weight (kg)</label>
-    <input id="weight" type="number" [(ngModel)]="weight" name="weight" />
+      <div>
+        <label for="weight">Weight (kg)</label>
+        <input
+          id="weight"
+          type="number"
+          [ngModel]="weight()"
+          (ngModelChange)="weight.set($event)"
+          name="weight"
+        />
+      </div>
 
-    <label for="gender">Gender</label>
-    <select id="gender" [(ngModel)]="gender" name="gender">
-      <option value="male">Male</option>
-      <option value="female">Female</option>
-    </select>
-  </div>
+      <div>
+        <label for="gender">Gender</label>
+        <select id="gender" [ngModel]="gender()" (ngModelChange)="gender.set($event)" name="gender">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+    </div>
+  </section>
 
-  <div class="form-card">
+  <section class="form-card surface-card">
     <h3>Daily Goals</h3>
 
-    <label for="calories">Calories</label>
-    <input id="calories" type="number" [(ngModel)]="calorie_goal" name="calorie_goal" />
+    <div class="form-grid">
+      <div>
+        <label for="calories">Calories</label>
+        <input
+          id="calories"
+          type="number"
+          [ngModel]="calorie_goal()"
+          (ngModelChange)="calorie_goal.set($event)"
+          name="calorie_goal"
+        />
+      </div>
 
-    <label for="protein">Protein (g)</label>
-    <input id="protein" type="number" [(ngModel)]="protein_goal" name="protein_goal" />
+      <div>
+        <label for="protein">Protein (g)</label>
+        <input
+          id="protein"
+          type="number"
+          [ngModel]="protein_goal()"
+          (ngModelChange)="protein_goal.set($event)"
+          name="protein_goal"
+        />
+      </div>
 
-    <label for="fat">Fat (g)</label>
-    <input id="fat" type="number" [(ngModel)]="fat_goal" name="fat_goal" />
+      <div>
+        <label for="fat">Fat (g)</label>
+        <input
+          id="fat"
+          type="number"
+          [ngModel]="fat_goal()"
+          (ngModelChange)="fat_goal.set($event)"
+          name="fat_goal"
+        />
+      </div>
 
-    <label for="carbs">Carbs (g)</label>
-    <input id="carbs" type="number" [(ngModel)]="carbs_goal" name="carbs_goal" />
+      <div>
+        <label for="carbs">Carbs (g)</label>
+        <input
+          id="carbs"
+          type="number"
+          [ngModel]="carbs_goal()"
+          (ngModelChange)="carbs_goal.set($event)"
+          name="carbs_goal"
+        />
+      </div>
+    </div>
+  </section>
+
+  <div class="actions-row">
+    <button class="btn btn-primary save-btn" (click)="onSave()">Save changes</button>
   </div>
-
-  <button class="save-btn" (click)="onSave()">Save</button>
 </div>

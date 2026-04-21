@@ -1,10 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { RouterModule } from '@angular/router';
 
 import { CalorieApiService } from '../../services/calorie-api.service';
-import { AuthService } from '../../services/auth.service';
 import { DailySummary, MealEntry, MealType } from '../../models/entry.model';
 import { Product } from '../../models/product.model';
 import { ProfileGoalResponse } from '../../models/profile.model';
@@ -18,24 +18,24 @@ import { ProfileGoalResponse } from '../../models/profile.model';
 })
 export class TrackerComponent implements OnInit {
   private calorieApi = inject(CalorieApiService);
-  private authService = inject(AuthService);
+  private router = inject(Router);
 
-  products: Product[] = [];
-  entries: MealEntry[] = [];
-  summary: DailySummary | null = null;
+  products = signal<Product[]>([]);
+  entries = signal<MealEntry[]>([]);
+  summary = signal<DailySummary | null>(null);
 
   today = new Date().toISOString().split('T')[0];
-  selectedDate = this.today;
-  selectedProductId: number | null = null;
-  grams = 100;
-  mealType: MealType = 'breakfast';
+  selectedDate = signal(this.today);
+  selectedProductId = signal<number | null>(null);
+  grams = signal(100);
+  mealType = signal<MealType>('breakfast');
 
-  showProductModal = false;
-  showManualModal = false;
-  showProfileCompletionModal = false;
-  productSearch = '';
-  profileModalError = '';
-  profileModalSaving = false;
+  showProductModal = signal(false);
+  showManualModal = signal(false);
+  showProfileCompletionModal = signal(false);
+  productSearch = signal('');
+  profileModalError = signal('');
+  profileModalSaving = signal(false);
   profileCheckAttempts = 0;
 
   profileCompletion = {
@@ -56,16 +56,20 @@ export class TrackerComponent implements OnInit {
     saveProduct: false,
   };
 
-  errorMessage = '';
-  loading = false;
+  errorMessage = signal('');
+  loading = signal(false);
 
   ngOnInit(): void {
+    const navState = this.router.getCurrentNavigation()?.extras.state;
+    const shouldCompleteFromLogin = navState?.['shouldCompleteProfile'] === true;
+
+    if (shouldCompleteFromLogin) {
+      this.showProfileCompletionModal.set(true);
+    }
+
     this.loadProducts();
     this.loadEntriesAndSummary();
-
-    if (this.authService.isAuthenticated()) {
-      this.checkProfileCompletion();
-    }
+    this.checkProfileCompletion();
   }
 
   checkProfileCompletion(): void {
@@ -82,7 +86,7 @@ export class TrackerComponent implements OnInit {
           gender: data.profile.gender,
         };
 
-        this.showProfileCompletionModal = !isProfileCompleted;
+        this.showProfileCompletionModal.set(!isProfileCompleted);
         console.debug('[Tracker] profile loaded', {
           isProfileCompleted,
           attempts: this.profileCheckAttempts,
@@ -99,7 +103,7 @@ export class TrackerComponent implements OnInit {
           return;
         }
 
-        this.profileModalError = 'Failed to load profile details';
+        this.profileModalError.set('Failed to load profile details');
       },
     });
   }
@@ -107,62 +111,62 @@ export class TrackerComponent implements OnInit {
   loadProducts(): void {
     this.calorieApi.getProducts().subscribe({
       next: (data) => {
-        this.products = data;
+        this.products.set(data);
       },
       error: () => {
-        this.errorMessage = 'Failed to load products';
+        this.errorMessage.set('Failed to load products');
       },
     });
   }
 
   get filteredProducts(): Product[] {
-    const query = this.productSearch.trim().toLowerCase();
+    const query = this.productSearch().trim().toLowerCase();
     if (!query) {
-      return this.products;
+      return this.products();
     }
 
-    return this.products.filter((product) => product.name.toLowerCase().includes(query));
+    return this.products().filter((product) => product.name.toLowerCase().includes(query));
   }
 
   get selectedProduct(): Product | null {
-    if (this.selectedProductId === null) {
+    if (this.selectedProductId() === null) {
       return null;
     }
 
-    return this.products.find((product) => product.id === this.selectedProductId) ?? null;
+    return this.products().find((product) => product.id === this.selectedProductId()) ?? null;
   }
 
   openProductModal(): void {
-    this.productSearch = '';
-    this.showProductModal = true;
+    this.productSearch.set('');
+    this.showProductModal.set(true);
   }
 
   closeProductModal(): void {
-    this.showProductModal = false;
+    this.showProductModal.set(false);
   }
 
   openManualModal(): void {
     this.resetManualEntry();
-    this.showManualModal = true;
+    this.showManualModal.set(true);
   }
 
   closeManualModal(): void {
-    this.showManualModal = false;
+    this.showManualModal.set(false);
   }
 
   onCompleteProfile(): void {
-    this.profileModalError = '';
+    this.profileModalError.set('');
 
     if (
       !this.profileCompletion.age ||
       !this.profileCompletion.height ||
       !this.profileCompletion.weight
     ) {
-      this.profileModalError = 'Please fill in all fields';
+      this.profileModalError.set('Please fill in all fields');
       return;
     }
 
-    this.profileModalSaving = true;
+    this.profileModalSaving.set(true);
 
     this.calorieApi
       .updateProfile({
@@ -175,95 +179,95 @@ export class TrackerComponent implements OnInit {
       })
       .subscribe({
         next: () => {
-          this.showProfileCompletionModal = false;
-          this.profileModalSaving = false;
+          this.showProfileCompletionModal.set(false);
+          this.profileModalSaving.set(false);
           console.debug('[Tracker] profile completed and saved');
           this.loadEntriesAndSummary();
         },
         error: () => {
-          this.profileModalSaving = false;
-          this.profileModalError = 'Failed to save profile details';
+          this.profileModalSaving.set(false);
+          this.profileModalError.set('Failed to save profile details');
         },
       });
   }
 
   chooseProduct(product: Product): void {
-    this.selectedProductId = product.id;
-    this.mealType = 'breakfast';
-    this.grams = 100;
+    this.selectedProductId.set(product.id);
+    this.mealType.set('breakfast');
+    this.grams.set(100);
     this.closeProductModal();
   }
 
   clearSelectedProduct(): void {
-    this.selectedProductId = null;
-    this.grams = 100;
+    this.selectedProductId.set(null);
+    this.grams.set(100);
   }
 
   loadEntriesAndSummary(): void {
-    this.loading = true;
-    this.errorMessage = '';
+    this.loading.set(true);
+    this.errorMessage.set('');
 
-    this.calorieApi.getEntries(this.selectedDate).subscribe({
+    this.calorieApi.getEntries(this.selectedDate()).subscribe({
       next: (entries) => {
-        this.entries = entries;
+        this.entries.set(entries);
 
-        this.calorieApi.getDailySummary(this.selectedDate).subscribe({
+        this.calorieApi.getDailySummary(this.selectedDate()).subscribe({
           next: (summary) => {
-            this.summary = summary;
-            this.loading = false;
+            this.summary.set(summary);
+            this.loading.set(false);
           },
           error: () => {
-            this.summary = null;
-            this.errorMessage = 'Failed to load summary';
-            this.loading = false;
+            this.summary.set(null);
+            this.errorMessage.set('Failed to load summary');
+            this.loading.set(false);
           },
         });
       },
       error: () => {
-        this.entries = [];
-        this.summary = null;
-        this.errorMessage = 'Failed to load entries';
-        this.loading = false;
+        this.entries.set([]);
+        this.summary.set(null);
+        this.errorMessage.set('Failed to load entries');
+        this.loading.set(false);
       },
     });
   }
 
   onAddEntry(): void {
-    if (!this.selectedProductId) {
-      this.errorMessage = 'Select a product';
+    if (!this.selectedProductId()) {
+      this.errorMessage.set('Select a product');
       return;
     }
 
-    this.errorMessage = '';
+    this.errorMessage.set('');
 
     this.calorieApi
       .createEntry({
-        product: this.selectedProductId,
-        grams: this.grams,
-        meal_type: this.mealType,
-        date: this.selectedDate,
+        product: this.selectedProductId()!,
+        grams: this.grams(),
+        meal_type: this.mealType(),
+        date: this.selectedDate(),
       })
       .subscribe({
         next: () => {
-          this.selectedProductId = null;
-          this.grams = 100;
-          this.mealType = 'breakfast';
+          this.selectedProductId.set(null);
+          this.grams.set(100);
+          this.mealType.set('breakfast');
           this.loadEntriesAndSummary();
           this.loadProducts();
         },
         error: () => {
-          this.errorMessage = 'Failed to add entry';
+          this.errorMessage.set('Failed to add entry');
         },
       });
   }
 
   onSaveManualEntry(): void {
     if (!this.manualEntry.entryName || !this.manualEntry.caloriesPer100g) {
-      this.errorMessage = 'Enter product name and calories';
+      this.errorMessage.set('Enter product name and calories');
       return;
     }
 
-    this.errorMessage = '';
+    this.errorMessage.set('');
 
     this.calorieApi
       .createEntry({
@@ -274,7 +278,7 @@ export class TrackerComponent implements OnInit {
         carbs_per_100g: this.manualEntry.carbsPer100g,
         grams: this.manualEntry.grams,
         meal_type: this.manualEntry.mealType,
-        date: this.selectedDate,
+        date: this.selectedDate(),
         save_product: this.manualEntry.saveProduct,
       })
       .subscribe({
@@ -285,7 +289,7 @@ export class TrackerComponent implements OnInit {
           this.loadProducts();
         },
         error: () => {
-          this.errorMessage = 'Failed to add manual entry';
+          this.errorMessage.set('Failed to add manual entry');
         },
       });
   }
@@ -309,7 +313,7 @@ export class TrackerComponent implements OnInit {
         this.loadEntriesAndSummary();
       },
       error: () => {
-        this.errorMessage = 'Failed to delete entry';
+        this.errorMessage.set('Failed to delete entry');
       },
     });
   }

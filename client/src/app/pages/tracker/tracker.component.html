@@ -1,49 +1,56 @@
-<div class="container">
-  <nav>
-    <h2>🔥 Calorie Tracker</h2>
-    <a routerLink="/history" class="history-link">📅 История</a>
-  </nav>
+<div class="page tracker-page">
+  <header class="page-header tracker-header">
+    <div>
+      <h2 class="page-title">Tracker Dashboard</h2>
+      <p class="page-subtitle">Log meals, monitor totals and keep your macros balanced.</p>
+    </div>
+    <a routerLink="/history" class="chip history-link">Open history</a>
+  </header>
 
-  @if (errorMessage) {
-    <section class="card error-card">
-      {{ errorMessage }}
+  @if (errorMessage()) {
+    <section class="status-error">
+      {{ errorMessage() }}
     </section>
   }
 
-  <section class="card summary-card">
+  @if (loading()) {
+    <p class="status-info">Loading tracker data...</p>
+  }
+
+  <section class="surface-card card summary-card">
     <div class="stats-header">
-      <h3>{{ selectedDate | date: 'longDate' }}</h3>
+      <h3>{{ selectedDate() | date: 'longDate' }}</h3>
       <p class="total-count">
-        <b>{{ summary?.total_calories || 0 }}</b> / 2000 ккал
+        <b>{{ summary()?.total_calories || 0 }}</b> / 2000 kcal
       </p>
     </div>
 
     <div class="bar">
-      <div [style.width.%]="((summary?.total_calories || 0) / 2000) * 100"></div>
+      <div [style.width.%]="((summary()?.total_calories || 0) / 2000) * 100"></div>
     </div>
 
     <div class="macros-summary">
       <div class="macro-item">
-        <span>Б</span>
-        <b>{{ summary?.total_protein || 0 }}г</b>
+        <span>Protein</span>
+        <b>{{ summary()?.total_protein || 0 }} g</b>
       </div>
       <div class="macro-item">
-        <span>Ж</span>
-        <b>{{ summary?.total_fat || 0 }}г</b>
+        <span>Fat</span>
+        <b>{{ summary()?.total_fat || 0 }} g</b>
       </div>
       <div class="macro-item">
-        <span>У</span>
-        <b>{{ summary?.total_carbs || 0 }}г</b>
+        <span>Carbs</span>
+        <b>{{ summary()?.total_carbs || 0 }} g</b>
       </div>
     </div>
   </section>
 
-  <section class="card actions-card">
+  <section class="surface-card card actions-card">
     <div class="action-buttons">
-      <button type="button" class="secondary-btn" (click)="openProductModal()">
+      <button type="button" class="btn btn-secondary" (click)="openProductModal()">
         Choose from my products
       </button>
-      <button type="button" class="secondary-btn" (click)="openManualModal()">
+      <button type="button" class="btn btn-secondary" (click)="openManualModal()">
         Enter manually
       </button>
     </div>
@@ -58,67 +65,95 @@
 
         <div class="selected-controls">
           <div class="meta-inputs compact">
-            <input
-              type="date"
-              [(ngModel)]="selectedDate"
-              name="selectedDate"
-              (change)="loadEntriesAndSummary()"
-            />
-            <select [(ngModel)]="mealType" name="mealType">
-              <option value="breakfast">Breakfast</option>
-              <option value="lunch">Lunch</option>
-              <option value="dinner">Dinner</option>
-              <option value="snack">Snack</option>
-            </select>
+            <div>
+              <label for="selectedDate">Date</label>
+              <input
+                id="selectedDate"
+                type="date"
+                [ngModel]="selectedDate()"
+                (ngModelChange)="selectedDate.set($event)"
+                name="selectedDate"
+                (change)="loadEntriesAndSummary()"
+              />
+            </div>
+            <div>
+              <label for="mealType">Meal type</label>
+              <select
+                id="mealType"
+                [ngModel]="mealType()"
+                (ngModelChange)="mealType.set($event)"
+                name="mealType"
+              >
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+                <option value="snack">Snack</option>
+              </select>
+            </div>
           </div>
 
           <div class="quick-row">
             <div class="weight-input full-width">
-              <input type="number" [(ngModel)]="grams" name="grams" placeholder="гр." />
+              <label for="grams">Weight (g)</label>
+              <input
+                id="grams"
+                type="number"
+                [ngModel]="grams()"
+                (ngModelChange)="grams.set($event)"
+                name="grams"
+                placeholder="100"
+              />
             </div>
           </div>
 
           <div class="button-row">
-            <button type="button" class="submit-btn" (click)="onAddEntry()">Add entry</button>
-            <button type="button" class="ghost-btn" (click)="clearSelectedProduct()">Clear</button>
+            <button type="button" class="btn btn-primary submit-btn" (click)="onAddEntry()">
+              Add entry
+            </button>
+            <button type="button" class="btn btn-secondary" (click)="clearSelectedProduct()">
+              Clear
+            </button>
           </div>
         </div>
       </div>
     } @else {
-      <div class="empty-state">Выберите продукт или введите еду вручную.</div>
+      <div class="empty-state">Select a product or add it manually.</div>
     }
   </section>
 
   <section class="entries-list">
-    @for (item of entries; track item.id) {
-      <div class="entry-card">
+    @for (item of entries(); track item.id) {
+      <div class="entry-card surface-card">
         <div class="entry-main">
           <span class="meal-tag">{{ getMealTypeLabel(item.meal_type) }}</span>
           <div class="entry-text">
             <strong>{{ item.product_name }}</strong>
             <p>
-              {{ item.calories }} ккал • Б:{{ item.protein }} Ж:{{ item.fat }} У:{{ item.carbs }}
+              {{ item.calories }} kcal • P:{{ item.protein }} F:{{ item.fat }} C:{{ item.carbs }}
             </p>
           </div>
         </div>
-        <button type="button" class="remove-btn" (click)="onDeleteEntry(item.id)">✕</button>
+        <button type="button" class="btn btn-danger remove-btn" (click)="onDeleteEntry(item.id)">
+          Remove
+        </button>
       </div>
     }
   </section>
 
-  @if (showProductModal) {
+  @if (showProductModal()) {
     <div class="modal-backdrop" (click)="closeProductModal()">
-      <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal surface-card" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>Choose a product</h3>
-          <button type="button" class="icon-btn" (click)="closeProductModal()">✕</button>
+          <button type="button" class="icon-btn" (click)="closeProductModal()">x</button>
         </div>
 
         <input
           type="text"
           class="modal-search"
           placeholder="Search product"
-          [(ngModel)]="productSearch"
+          [ngModel]="productSearch()"
+          (ngModelChange)="productSearch.set($event)"
           name="productSearch"
         />
 
@@ -140,57 +175,78 @@
     </div>
   }
 
-  @if (showManualModal) {
+  @if (showManualModal()) {
     <div class="modal-backdrop" (click)="closeManualModal()">
-      <div class="modal large" (click)="$event.stopPropagation()">
+      <div class="modal large surface-card" (click)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>Enter manually</h3>
-          <button type="button" class="icon-btn" (click)="closeManualModal()">✕</button>
+          <button type="button" class="icon-btn" (click)="closeManualModal()">x</button>
         </div>
 
         <div class="modal-grid">
-          <input
-            type="text"
-            placeholder="Product name"
-            [(ngModel)]="manualEntry.entryName"
-            name="entryName"
-          />
-          <input
-            type="number"
-            placeholder="Calories / 100g"
-            [(ngModel)]="manualEntry.caloriesPer100g"
-            name="caloriesPer100g"
-          />
-          <input
-            type="number"
-            placeholder="Protein / 100g"
-            [(ngModel)]="manualEntry.proteinPer100g"
-            name="proteinPer100g"
-          />
-          <input
-            type="number"
-            placeholder="Fat / 100g"
-            [(ngModel)]="manualEntry.fatPer100g"
-            name="fatPer100g"
-          />
-          <input
-            type="number"
-            placeholder="Carbs / 100g"
-            [(ngModel)]="manualEntry.carbsPer100g"
-            name="carbsPer100g"
-          />
-          <input
-            type="number"
-            placeholder="Grams"
-            [(ngModel)]="manualEntry.grams"
-            name="manualGrams"
-          />
-          <select [(ngModel)]="manualEntry.mealType" name="manualMealType">
-            <option value="breakfast">Breakfast</option>
-            <option value="lunch">Lunch</option>
-            <option value="dinner">Dinner</option>
-            <option value="snack">Snack</option>
-          </select>
+          <div>
+            <label for="entryName">Product name</label>
+            <input
+              id="entryName"
+              type="text"
+              [(ngModel)]="manualEntry.entryName"
+              name="entryName"
+            />
+          </div>
+          <div>
+            <label for="caloriesPer100g">Calories / 100g</label>
+            <input
+              id="caloriesPer100g"
+              type="number"
+              [(ngModel)]="manualEntry.caloriesPer100g"
+              name="caloriesPer100g"
+            />
+          </div>
+          <div>
+            <label for="proteinPer100g">Protein / 100g</label>
+            <input
+              id="proteinPer100g"
+              type="number"
+              [(ngModel)]="manualEntry.proteinPer100g"
+              name="proteinPer100g"
+            />
+          </div>
+          <div>
+            <label for="fatPer100g">Fat / 100g</label>
+            <input
+              id="fatPer100g"
+              type="number"
+              [(ngModel)]="manualEntry.fatPer100g"
+              name="fatPer100g"
+            />
+          </div>
+          <div>
+            <label for="carbsPer100g">Carbs / 100g</label>
+            <input
+              id="carbsPer100g"
+              type="number"
+              [(ngModel)]="manualEntry.carbsPer100g"
+              name="carbsPer100g"
+            />
+          </div>
+          <div>
+            <label for="manualGrams">Weight (g)</label>
+            <input
+              id="manualGrams"
+              type="number"
+              [(ngModel)]="manualEntry.grams"
+              name="manualGrams"
+            />
+          </div>
+          <div>
+            <label for="manualMealType">Meal type</label>
+            <select id="manualMealType" [(ngModel)]="manualEntry.mealType" name="manualMealType">
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="snack">Snack</option>
+            </select>
+          </div>
         </div>
 
         <label class="checkbox-row">
@@ -199,16 +255,20 @@
         </label>
 
         <div class="button-row">
-          <button type="button" class="submit-btn" (click)="onSaveManualEntry()">Save entry</button>
-          <button type="button" class="ghost-btn" (click)="closeManualModal()">Cancel</button>
+          <button type="button" class="btn btn-primary submit-btn" (click)="onSaveManualEntry()">
+            Save entry
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="closeManualModal()">
+            Cancel
+          </button>
         </div>
       </div>
     </div>
   }
 
-  @if (showProfileCompletionModal) {
+  @if (showProfileCompletionModal()) {
     <div class="modal-backdrop">
-      <div class="modal">
+      <div class="modal surface-card">
         <div class="modal-header">
           <h3>Complete your profile</h3>
         </div>
@@ -216,42 +276,54 @@
         <p>Enter your data once so we can calculate your daily calories and macros.</p>
 
         <div class="modal-grid">
-          <input
-            type="number"
-            placeholder="Age"
-            [(ngModel)]="profileCompletion.age"
-            name="profileAge"
-          />
-          <input
-            type="number"
-            placeholder="Height (cm)"
-            [(ngModel)]="profileCompletion.height"
-            name="profileHeight"
-          />
-          <input
-            type="number"
-            placeholder="Weight (kg)"
-            [(ngModel)]="profileCompletion.weight"
-            name="profileWeight"
-          />
-          <select [(ngModel)]="profileCompletion.gender" name="profileGender">
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-          </select>
+          <div>
+            <label for="profileAge">Age</label>
+            <input
+              id="profileAge"
+              type="number"
+              [(ngModel)]="profileCompletion.age"
+              name="profileAge"
+            />
+          </div>
+          <div>
+            <label for="profileHeight">Height (cm)</label>
+            <input
+              id="profileHeight"
+              type="number"
+              [(ngModel)]="profileCompletion.height"
+              name="profileHeight"
+            />
+          </div>
+          <div>
+            <label for="profileWeight">Weight (kg)</label>
+            <input
+              id="profileWeight"
+              type="number"
+              [(ngModel)]="profileCompletion.weight"
+              name="profileWeight"
+            />
+          </div>
+          <div>
+            <label for="profileGender">Gender</label>
+            <select id="profileGender" [(ngModel)]="profileCompletion.gender" name="profileGender">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
         </div>
 
-        @if (profileModalError) {
-          <p class="error-text">{{ profileModalError }}</p>
+        @if (profileModalError()) {
+          <p class="status-error">{{ profileModalError() }}</p>
         }
 
         <div class="button-row">
           <button
             type="button"
-            class="submit-btn"
+            class="btn btn-primary submit-btn"
             (click)="onCompleteProfile()"
-            [disabled]="profileModalSaving"
+            [disabled]="profileModalSaving()"
           >
-            {{ profileModalSaving ? 'Saving...' : 'Save profile' }}
+            {{ profileModalSaving() ? 'Saving...' : 'Save profile' }}
           </button>
         </div>
       </div>

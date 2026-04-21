@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../services/auth.service';
+import { CalorieApiService } from '../../services/calorie-api.service';
+import { ProfileGoalResponse } from '../../models/profile.model';
 
 @Component({
   selector: 'app-login',
@@ -14,6 +16,7 @@ import { AuthService } from '../../services/auth.service';
 })
 export class LoginComponent {
   private authService = inject(AuthService);
+  private calorieApi = inject(CalorieApiService);
   private router = inject(Router);
 
   username = '';
@@ -30,7 +33,18 @@ export class LoginComponent {
       })
       .subscribe({
         next: () => {
-          this.router.navigate(['/tracker']);
+          this.calorieApi.getProfile().subscribe({
+            next: (data: ProfileGoalResponse) => {
+              this.router.navigate(['/tracker'], {
+                state: {
+                  shouldCompleteProfile: data.profile.is_profile_completed !== true,
+                },
+              });
+            },
+            error: () => {
+              this.router.navigate(['/tracker']);
+            },
+          });
         },
         error: () => {
           this.errorMessage = 'Invalid username or password';

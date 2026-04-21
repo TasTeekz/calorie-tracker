@@ -1,38 +1,51 @@
-.register-page {
-  max-width: 400px;
-  margin: 60px auto;
-  padding: 24px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+.auth-page {
+  width: min(460px, 100%);
+  margin: 32px auto;
 }
 
-form {
+.auth-card {
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 18px;
 }
 
-input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+.auth-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-button {
-  padding: 10px 14px;
-  border: none;
-  border-radius: 8px;
-  background: #0d6efd;
-  color: white;
-  cursor: pointer;
+.auth-header h2 {
+  font-size: 1.55rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
-.error {
-  color: #d9534f;
+.auth-header p {
+  color: var(--text-muted);
+  font-size: 0.92rem;
 }
 
-.success {
-  color: #198754;
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.auth-link {
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }

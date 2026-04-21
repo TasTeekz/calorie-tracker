@@ -1,13 +1,25 @@
 <div class="app-shell">
-  @if (isLoggedIn()) {
-    <nav class="navbar">
-      <a routerLink="/tracker">Tracker</a>
-      <a routerLink="/history">History</a>
-      <a routerLink="/products">Products</a>
-      <a routerLink="/profile">Profile</a>
-      <button (click)="onLogout()">Logout</button>
-    </nav>
-  }
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-dot"></div>
+        <div>
+          <h1>Calorie Tracker</h1>
+          <p>Smart daily nutrition dashboard</p>
+        </div>
+      </div>
+
+      @if (isLoggedIn()) {
+        <nav class="navbar">
+          <a routerLink="/tracker" routerLinkActive="active">Tracker</a>
+          <a routerLink="/history" routerLinkActive="active">History</a>
+          <a routerLink="/products" routerLinkActive="active">Products</a>
+          <a routerLink="/profile" routerLinkActive="active">Profile</a>
+          <button class="logout-btn" (click)="onLogout()">Logout</button>
+        </nav>
+      }
+    </div>
+  </header>
 
   <main class="content">
     <router-outlet></router-outlet>

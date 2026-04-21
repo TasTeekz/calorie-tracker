@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { CalorieApiService } from '../../services/calorie-api.service';
+import { AuthService } from '../../services/auth.service';
 import { DailySummary, MealEntry, MealType } from '../../models/entry.model';
 import { Product } from '../../models/product.model';
 import { ProfileGoalResponse } from '../../models/profile.model';
@@ -17,6 +18,7 @@ import { ProfileGoalResponse } from '../../models/profile.model';
 })
 export class TrackerComponent implements OnInit {
   private calorieApi = inject(CalorieApiService);
+  private authService = inject(AuthService);
 
   products: Product[] = [];
   entries: MealEntry[] = [];
@@ -34,6 +36,7 @@ export class TrackerComponent implements OnInit {
   productSearch = '';
   profileModalError = '';
   profileModalSaving = false;
+  profileCheckAttempts = 0;
 
   profileCompletion = {
     age: 18,
@@ -59,12 +62,19 @@ export class TrackerComponent implements OnInit {
   ngOnInit(): void {
     this.loadProducts();
     this.loadEntriesAndSummary();
-    this.checkProfileCompletion();
+
+    if (this.authService.isAuthenticated()) {
+      this.checkProfileCompletion();
+    }
   }
 
   checkProfileCompletion(): void {
+    this.profileCheckAttempts += 1;
+
     this.calorieApi.getProfile().subscribe({
       next: (data: ProfileGoalResponse) => {
+        const isProfileCompleted = data.profile.is_profile_completed === true;
+
         this.profileCompletion = {
           age: data.profile.age,
           height: data.profile.height,
@@ -72,9 +82,23 @@ export class TrackerComponent implements OnInit {
           gender: data.profile.gender,
         };
 
-        this.showProfileCompletionModal = !data.profile.is_profile_completed;
+        this.showProfileCompletionModal = !isProfileCompleted;
+        console.debug('[Tracker] profile loaded', {
+          isProfileCompleted,
+          attempts: this.profileCheckAttempts,
+        });
       },
-      error: () => {
+      error: (err) => {
+        console.debug('[Tracker] profile load failed', {
+          status: err?.status,
+          attempts: this.profileCheckAttempts,
+        });
+
+        if (this.profileCheckAttempts < 3) {
+          setTimeout(() => this.checkProfileCompletion(), 350);
+          return;
+        }
+
         this.profileModalError = 'Failed to load profile details';
       },
     });
@@ -153,6 +177,7 @@ export class TrackerComponent implements OnInit {
         next: () => {
           this.showProfileCompletionModal = false;
           this.profileModalSaving = false;
+          console.debug('[Tracker] profile completed and saved');
           this.loadEntriesAndSummary();
         },
         error: () => {

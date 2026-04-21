@@ -1,4 +1,5 @@
 from decimal import Decimal
+import logging
 
 from django.contrib.auth.models import User
 from rest_framework import status
@@ -18,6 +19,9 @@ from .serializers import (
     MealEntrySerializer,
 )
 from .utils import calculate_daily_goals
+
+
+logger = logging.getLogger(__name__)
 
 
 @api_view(['POST'])
@@ -48,8 +52,18 @@ def logout_view(request):
 
 class ProfileGoalAPIView(APIView):
     def get(self, request):
-        profile = request.user.profile
-        goal = request.user.daily_goal
+        profile, _ = Profile.objects.get_or_create(
+            user=request.user,
+            defaults={'sex': 'male', 'role': 'USER', 'is_profile_completed': False},
+        )
+        goal, _ = DailyGoal.objects.get_or_create(user=request.user)
+
+        logger.debug(
+            'Profile GET user_id=%s profile_id=%s completed=%s',
+            request.user.id,
+            profile.id,
+            profile.is_profile_completed,
+        )
 
         return Response({
             'profile': ProfileSerializer(profile).data,
@@ -57,8 +71,11 @@ class ProfileGoalAPIView(APIView):
         })
 
     def put(self, request):
-        profile = request.user.profile
-        goal = request.user.daily_goal
+        profile, _ = Profile.objects.get_or_create(
+            user=request.user,
+            defaults={'sex': 'male', 'role': 'USER', 'is_profile_completed': False},
+        )
+        goal, _ = DailyGoal.objects.get_or_create(user=request.user)
         profile_data = request.data.get('profile', {})
         goal_data = request.data.get('daily_goal', {})
         profile_fields = {'age', 'height', 'weight', 'gender'}
@@ -84,6 +101,14 @@ class ProfileGoalAPIView(APIView):
                 if all(field in profile_data for field in profile_fields):
                     updated_profile.is_profile_completed = True
                     updated_profile.save(update_fields=['is_profile_completed'])
+
+                logger.debug(
+                    'Profile PUT user_id=%s profile_id=%s completed=%s profile_data=%s',
+                    request.user.id,
+                    updated_profile.id,
+                    updated_profile.is_profile_completed,
+                    profile_data,
+                )
 
             goal_serializer.save()
 

@@ -157,20 +157,20 @@ class MealEntrySerializer(serializers.ModelSerializer):
         validated_data.pop('user', None)
         save_product = validated_data.pop('save_product', False)
         product = validated_data.pop('product', None)
-
+        # Всегда вытаскиваем эти поля из validated_data
+        entry_name = validated_data.pop('entry_name', None)
+        calories_per_100g = validated_data.pop('calories_per_100g', None)
+        protein_per_100g = validated_data.pop('protein_per_100g', 0)
+        fat_per_100g = validated_data.pop('fat_per_100g', 0)
+        carbs_per_100g = validated_data.pop('carbs_per_100g', 0)
         if product is not None:
+            # Берём значения из продукта, игнорируем то что пришло
             entry_name = product.name
             calories_per_100g = product.calories_per_100g
             protein_per_100g = product.protein_per_100g
             fat_per_100g = product.fat_per_100g
             carbs_per_100g = product.carbs_per_100g
         else:
-            entry_name = validated_data.pop('entry_name')
-            calories_per_100g = validated_data.pop('calories_per_100g')
-            protein_per_100g = validated_data.pop('protein_per_100g', 0)
-            fat_per_100g = validated_data.pop('fat_per_100g', 0)
-            carbs_per_100g = validated_data.pop('carbs_per_100g', 0)
-
             if save_product:
                 product = Product.objects.create(
                     user=request.user,
@@ -180,7 +180,6 @@ class MealEntrySerializer(serializers.ModelSerializer):
                     fat_per_100g=fat_per_100g,
                     carbs_per_100g=carbs_per_100g,
                 )
-
         entry = MealEntry.objects.create(
             user=request.user,
             product=product,
@@ -189,6 +188,6 @@ class MealEntrySerializer(serializers.ModelSerializer):
             protein_per_100g=protein_per_100g,
             fat_per_100g=fat_per_100g,
             carbs_per_100g=carbs_per_100g,
-            **validated_data,
+            **validated_data,  # теперь здесь только grams, meal_type, date
         )
         return entry

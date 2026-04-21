@@ -122,4 +122,5 @@ calorie-tracker/
 4. Complete history page with backend data
 5. Add more features (meal suggestions, dietary preferences, etc.)
 
----
+
+

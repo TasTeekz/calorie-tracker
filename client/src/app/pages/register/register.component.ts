@@ -17,11 +17,9 @@ export class RegisterComponent {
   private router = inject(Router);
 
   username = '';
+  name = '';
   password = '';
-  age = 18;
-  height = 170;
-  weight = 70;
-  gender: 'male' | 'female' = 'male';
+  confirmPassword = '';
   errorMessage = '';
   successMessage = '';
 
@@ -29,24 +27,26 @@ export class RegisterComponent {
     this.errorMessage = '';
     this.successMessage = '';
 
-    if (!this.username || !this.password) {
+    if (!this.username || !this.name || !this.password || !this.confirmPassword) {
       this.errorMessage = 'Please fill in all fields';
+      return;
+    }
+
+    if (this.password !== this.confirmPassword) {
+      this.errorMessage = 'Passwords do not match';
       return;
     }
 
     this.authService
       .register({
         username: this.username,
+        name: this.name,
         password: this.password,
-        age: this.age,
-        height: this.height,
-        weight: this.weight,
-        gender: this.gender,
+        confirm_password: this.confirmPassword,
       })
       .subscribe({
         next: () => {
-          this.successMessage = 'Registration successful';
-          this.router.navigate(['/tracker']);
+          this.router.navigate(['/login']);
         },
         error: (err) => {
           if (err.status === 400) {

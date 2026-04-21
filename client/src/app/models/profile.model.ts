@@ -3,6 +3,7 @@ export interface Profile {
   height: number;
   weight: number;
   gender: 'male' | 'female';
+  is_profile_completed: boolean;
   role: 'USER' | 'ADMIN';
 }
 

@@ -5,11 +5,13 @@ export interface LoginRequest {
 
 export interface RegisterRequest {
   username: string;
+  name: string;
   password: string;
-  age: number;
-  height: number;
-  weight: number;
-  gender: 'male' | 'female';
+  confirm_password: string;
+}
+
+export interface RegisterResponse {
+  message: string;
 }
 
 export interface AuthResponse {

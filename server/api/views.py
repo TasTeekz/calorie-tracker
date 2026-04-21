@@ -17,6 +17,7 @@ from .serializers import (
     ProductSerializer,
     MealEntrySerializer,
 )
+from .utils import calculate_daily_goals
 
 
 @api_view(['POST'])
@@ -24,12 +25,9 @@ from .serializers import (
 def register_view(request):
     serializer = RegisterSerializer(data=request.data)
     if serializer.is_valid():
-        user = serializer.save()
-        refresh = RefreshToken.for_user(user)
+        serializer.save()
         return Response({
             'message': 'User registered successfully',
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -61,16 +59,37 @@ class ProfileGoalAPIView(APIView):
     def put(self, request):
         profile = request.user.profile
         goal = request.user.daily_goal
+        profile_data = request.data.get('profile', {})
+        goal_data = request.data.get('daily_goal', {})
+        profile_fields = {'age', 'height', 'weight', 'gender'}
 
-        profile_serializer = ProfileSerializer(profile, data=request.data.get('profile', {}), partial=True)
-        goal_serializer = DailyGoalSerializer(goal, data=request.data.get('daily_goal', {}), partial=True)
+        profile_serializer = ProfileSerializer(profile, data=profile_data, partial=True)
+        goal_serializer = DailyGoalSerializer(goal, data=goal_data, partial=True)
 
         if profile_serializer.is_valid() and goal_serializer.is_valid():
-            profile_serializer.save()
+            updated_profile = profile_serializer.save()
+
+            if any(field in profile_data for field in profile_fields):
+                goals = calculate_daily_goals(
+                    age=updated_profile.age,
+                    height=updated_profile.height,
+                    weight=float(updated_profile.weight),
+                    gender=updated_profile.sex,
+                )
+                goal.calorie_goal = goals['calorie_goal']
+                goal.protein_goal = goals['protein_goal']
+                goal.fat_goal = goals['fat_goal']
+                goal.carbs_goal = goals['carbs_goal']
+
+                if all(field in profile_data for field in profile_fields):
+                    updated_profile.is_profile_completed = True
+                    updated_profile.save(update_fields=['is_profile_completed'])
+
             goal_serializer.save()
+
             return Response({
-                'profile': profile_serializer.data,
-                'daily_goal': goal_serializer.data,
+                'profile': ProfileSerializer(updated_profile).data,
+                'daily_goal': DailyGoalSerializer(goal).data,
             })
 
         return Response({

@@ -21,7 +21,7 @@ export class RegisterComponent {
   age = 18;
   height = 170;
   weight = 70;
-  sex: 'male' | 'female' = 'male';
+  gender: 'male' | 'female' = 'male';
   errorMessage = '';
   successMessage = '';
 
@@ -41,7 +41,7 @@ export class RegisterComponent {
         age: this.age,
         height: this.height,
         weight: this.weight,
-        sex: this.sex,
+        gender: this.gender,
       })
       .subscribe({
         next: () => {

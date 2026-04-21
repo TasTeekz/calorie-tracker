@@ -2,6 +2,8 @@ export interface Profile {
   age: number;
   height: number;
   weight: number;
+  gender: 'male' | 'female';
+  role: 'USER' | 'ADMIN';
 }
 
 export interface DailyGoal {

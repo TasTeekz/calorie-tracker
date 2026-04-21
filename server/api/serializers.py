@@ -12,14 +12,25 @@ class RegisterSerializer(serializers.Serializer):
     age = serializers.IntegerField(min_value=10)
     height = serializers.IntegerField(min_value=100)
     weight = serializers.DecimalField(max_digits=5, decimal_places=2)
-    sex = serializers.ChoiceField(choices=['male', 'female'])
+    gender = serializers.ChoiceField(choices=['male', 'female'], required=False)
+    sex = serializers.ChoiceField(choices=['male', 'female'], required=False, write_only=True)
+
+    def validate(self, attrs):
+        if 'gender' not in attrs:
+            legacy_gender = attrs.get('sex')
+            if legacy_gender:
+                attrs['gender'] = legacy_gender
+            else:
+                raise serializers.ValidationError({'gender': 'This field is required.'})
+        return attrs
 
     @transaction.atomic
     def create(self, validated_data):
         age = validated_data.pop('age')
         height = validated_data.pop('height')
         weight = validated_data.pop('weight')
-        sex = validated_data.pop('sex')
+        gender = validated_data.pop('gender')
+        validated_data.pop('sex', None)
 
         user = User.objects.create_user(
             username=validated_data['username'],
@@ -30,10 +41,10 @@ class RegisterSerializer(serializers.Serializer):
         profile.age = age
         profile.height = height
         profile.weight = weight
-        profile.sex = sex
+        profile.sex = gender
         profile.save()
 
-        goals = calculate_daily_goals(age=age, height=height, weight=float(weight), sex=sex)
+        goals = calculate_daily_goals(age=age, height=height, weight=float(weight), gender=gender)
         daily_goal = user.daily_goal
         daily_goal.calorie_goal = goals['calorie_goal']
         daily_goal.protein_goal = goals['protein_goal']
@@ -53,9 +64,12 @@ class DailySummarySerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    gender = serializers.ChoiceField(choices=Profile.SEX_CHOICES, source='sex')
+
     class Meta:
         model = Profile
-        fields = ['age', 'height', 'weight', 'sex']
+        fields = ['age', 'height', 'weight', 'gender', 'role']
+        read_only_fields = ['role']
 
 
 class DailyGoalSerializer(serializers.ModelSerializer):

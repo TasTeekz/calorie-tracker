@@ -9,7 +9,7 @@ export interface RegisterRequest {
   age: number;
   height: number;
   weight: number;
-  sex: 'male' | 'female';
+  gender: 'male' | 'female';
 }
 
 export interface AuthResponse {

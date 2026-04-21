@@ -18,6 +18,8 @@ export class ProfileComponent implements OnInit {
   age = 18;
   height = 170;
   weight = 70;
+  gender: 'male' | 'female' = 'male';
+  role: 'USER' | 'ADMIN' = 'USER';
 
   calorie_goal = 2000;
   protein_goal = 120;
@@ -41,6 +43,8 @@ export class ProfileComponent implements OnInit {
         this.age = data.profile.age;
         this.height = data.profile.height;
         this.weight = data.profile.weight;
+        this.gender = data.profile.gender;
+        this.role = data.profile.role;
 
         this.calorie_goal = data.daily_goal.calorie_goal;
         this.protein_goal = data.daily_goal.protein_goal;
@@ -66,6 +70,7 @@ export class ProfileComponent implements OnInit {
           age: this.age,
           height: this.height,
           weight: this.weight,
+          gender: this.gender,
         },
         daily_goal: {
           calorie_goal: this.calorie_goal,

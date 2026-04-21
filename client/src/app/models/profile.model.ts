@@ -2,6 +2,9 @@ export interface Profile {
   age: number;
   height: number;
   weight: number;
+  gender: 'male' | 'female';
+  is_profile_completed: boolean;
+  role: 'USER' | 'ADMIN';
 }
 
 export interface DailyGoal {

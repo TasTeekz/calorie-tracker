@@ -1,8 +1,8 @@
 from decimal import Decimal
 
 
-def calculate_daily_goals(age: int, height: float, weight: float, sex: str):
-    if sex == 'female':
+def calculate_daily_goals(age: int, height: float, weight: float, gender: str):
+    if gender == 'female':
         bmr = 10 * weight + 6.25 * height - 5 * age - 161
     else:
         bmr = 10 * weight + 6.25 * height - 5 * age + 5

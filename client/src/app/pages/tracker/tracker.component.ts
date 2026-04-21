@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { CalorieApiService } from '../../services/calorie-api.service';
+import { AuthService } from '../../services/auth.service';
 import { DailySummary, MealEntry, MealType } from '../../models/entry.model';
 import { Product } from '../../models/product.model';
+import { ProfileGoalResponse } from '../../models/profile.model';
 
 @Component({
   selector: 'app-tracker',
@@ -16,6 +18,7 @@ import { Product } from '../../models/product.model';
 })
 export class TrackerComponent implements OnInit {
   private calorieApi = inject(CalorieApiService);
+  private authService = inject(AuthService);
 
   products: Product[] = [];
   entries: MealEntry[] = [];
@@ -29,7 +32,18 @@ export class TrackerComponent implements OnInit {
 
   showProductModal = false;
   showManualModal = false;
+  showProfileCompletionModal = false;
   productSearch = '';
+  profileModalError = '';
+  profileModalSaving = false;
+  profileCheckAttempts = 0;
+
+  profileCompletion = {
+    age: 18,
+    height: 170,
+    weight: 70,
+    gender: 'male' as 'male' | 'female',
+  };
 
   manualEntry = {
     entryName: '',
@@ -48,6 +62,46 @@ export class TrackerComponent implements OnInit {
   ngOnInit(): void {
     this.loadProducts();
     this.loadEntriesAndSummary();
+
+    if (this.authService.isAuthenticated()) {
+      this.checkProfileCompletion();
+    }
+  }
+
+  checkProfileCompletion(): void {
+    this.profileCheckAttempts += 1;
+
+    this.calorieApi.getProfile().subscribe({
+      next: (data: ProfileGoalResponse) => {
+        const isProfileCompleted = data.profile.is_profile_completed === true;
+
+        this.profileCompletion = {
+          age: data.profile.age,
+          height: data.profile.height,
+          weight: data.profile.weight,
+          gender: data.profile.gender,
+        };
+
+        this.showProfileCompletionModal = !isProfileCompleted;
+        console.debug('[Tracker] profile loaded', {
+          isProfileCompleted,
+          attempts: this.profileCheckAttempts,
+        });
+      },
+      error: (err) => {
+        console.debug('[Tracker] profile load failed', {
+          status: err?.status,
+          attempts: this.profileCheckAttempts,
+        });
+
+        if (this.profileCheckAttempts < 3) {
+          setTimeout(() => this.checkProfileCompletion(), 350);
+          return;
+        }
+
+        this.profileModalError = 'Failed to load profile details';
+      },
+    });
   }
 
   loadProducts(): void {
@@ -94,6 +148,43 @@ export class TrackerComponent implements OnInit {
 
   closeManualModal(): void {
     this.showManualModal = false;
+  }
+
+  onCompleteProfile(): void {
+    this.profileModalError = '';
+
+    if (
+      !this.profileCompletion.age ||
+      !this.profileCompletion.height ||
+      !this.profileCompletion.weight
+    ) {
+      this.profileModalError = 'Please fill in all fields';
+      return;
+    }
+
+    this.profileModalSaving = true;
+
+    this.calorieApi
+      .updateProfile({
+        profile: {
+          age: this.profileCompletion.age,
+          height: this.profileCompletion.height,
+          weight: this.profileCompletion.weight,
+          gender: this.profileCompletion.gender,
+        },
+      })
+      .subscribe({
+        next: () => {
+          this.showProfileCompletionModal = false;
+          this.profileModalSaving = false;
+          console.debug('[Tracker] profile completed and saved');
+          this.loadEntriesAndSummary();
+        },
+        error: () => {
+          this.profileModalSaving = false;
+          this.profileModalError = 'Failed to save profile details';
+        },
+      });
   }
 
   chooseProduct(product: Product): void {

@@ -7,12 +7,18 @@ class Profile(models.Model):
         ('male', 'Male'),
         ('female', 'Female'),
     ]
+    ROLE_CHOICES = [
+        ('USER', 'User'),
+        ('ADMIN', 'Admin'),
+    ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     age = models.PositiveIntegerField(default=18)
     height = models.PositiveIntegerField(default=170)  # cm
     weight = models.DecimalField(max_digits=5, decimal_places=2, default=70.00)  # kg
     sex = models.CharField(max_length=10, choices=SEX_CHOICES, default='male')
+    is_profile_completed = models.BooleanField(default=False)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='USER')
 
     def __str__(self):
         return f"Profile of {self.user.username}"

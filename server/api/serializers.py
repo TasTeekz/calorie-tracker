@@ -3,43 +3,31 @@ from django.db import transaction
 from rest_framework import serializers
 
 from .models import Profile, DailyGoal, Product, MealEntry
-from .utils import calculate_daily_goals
 
 
 class RegisterSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
+    name = serializers.CharField(max_length=150)
     password = serializers.CharField(write_only=True, min_length=4)
-    age = serializers.IntegerField(min_value=10)
-    height = serializers.IntegerField(min_value=100)
-    weight = serializers.DecimalField(max_digits=5, decimal_places=2)
-    sex = serializers.ChoiceField(choices=['male', 'female'])
+    confirm_password = serializers.CharField(write_only=True, min_length=4)
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['confirm_password']:
+            raise serializers.ValidationError({'confirm_password': 'Passwords do not match.'})
+        return attrs
 
     @transaction.atomic
     def create(self, validated_data):
-        age = validated_data.pop('age')
-        height = validated_data.pop('height')
-        weight = validated_data.pop('weight')
-        sex = validated_data.pop('sex')
+        name = validated_data.pop('name').strip()
+        validated_data.pop('confirm_password', None)
 
         user = User.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password']
         )
 
-        profile = user.profile
-        profile.age = age
-        profile.height = height
-        profile.weight = weight
-        profile.sex = sex
-        profile.save()
-
-        goals = calculate_daily_goals(age=age, height=height, weight=float(weight), sex=sex)
-        daily_goal = user.daily_goal
-        daily_goal.calorie_goal = goals['calorie_goal']
-        daily_goal.protein_goal = goals['protein_goal']
-        daily_goal.fat_goal = goals['fat_goal']
-        daily_goal.carbs_goal = goals['carbs_goal']
-        daily_goal.save()
+        user.first_name = name
+        user.save(update_fields=['first_name'])
 
         return user
 
@@ -53,9 +41,12 @@ class DailySummarySerializer(serializers.Serializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    gender = serializers.ChoiceField(choices=Profile.SEX_CHOICES, source='sex')
+
     class Meta:
         model = Profile
-        fields = ['age', 'height', 'weight', 'sex']
+        fields = ['age', 'height', 'weight', 'gender', 'is_profile_completed', 'role']
+        read_only_fields = ['is_profile_completed', 'role']
 
 
 class DailyGoalSerializer(serializers.ModelSerializer):

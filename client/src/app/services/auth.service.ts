@@ -8,6 +8,7 @@ import {
   LogoutRequest,
   RefreshResponse,
   RegisterRequest,
+  RegisterResponse,
 } from '../models/auth.models';
 
 @Injectable({
@@ -23,10 +24,8 @@ export class AuthService {
   private authStateSubject = new BehaviorSubject<boolean>(this.hasAccessToken());
   authState$ = this.authStateSubject.asObservable();
 
-  register(data: RegisterRequest): Observable<AuthResponse> {
-    return this.http
-      .post<AuthResponse>(`${this.apiUrl}/register/`, data)
-      .pipe(tap((response) => this.saveTokens(response)));
+  register(data: RegisterRequest): Observable<RegisterResponse> {
+    return this.http.post<RegisterResponse>(`${this.apiUrl}/register/`, data);
   }
 
   login(data: LoginRequest): Observable<AuthResponse> {

@@ -205,4 +205,56 @@
       </div>
     </div>
   }
+
+  @if (showProfileCompletionModal) {
+    <div class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>Complete your profile</h3>
+        </div>
+
+        <p>Enter your data once so we can calculate your daily calories and macros.</p>
+
+        <div class="modal-grid">
+          <input
+            type="number"
+            placeholder="Age"
+            [(ngModel)]="profileCompletion.age"
+            name="profileAge"
+          />
+          <input
+            type="number"
+            placeholder="Height (cm)"
+            [(ngModel)]="profileCompletion.height"
+            name="profileHeight"
+          />
+          <input
+            type="number"
+            placeholder="Weight (kg)"
+            [(ngModel)]="profileCompletion.weight"
+            name="profileWeight"
+          />
+          <select [(ngModel)]="profileCompletion.gender" name="profileGender">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+
+        @if (profileModalError) {
+          <p class="error-text">{{ profileModalError }}</p>
+        }
+
+        <div class="button-row">
+          <button
+            type="button"
+            class="submit-btn"
+            (click)="onCompleteProfile()"
+            [disabled]="profileModalSaving"
+          >
+            {{ profileModalSaving ? 'Saving...' : 'Save profile' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

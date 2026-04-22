@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { Component, OnInit, inject, signal } from '@angular/core';
-=======
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
->>>>>>> 59713fa200c4b5d68356c26c9495724556b34355
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CalorieApiService } from '../../services/calorie-api.service';
@@ -28,7 +24,6 @@ export class HistoryComponent implements OnInit, OnDestroy {
   loading = signal(false);
 
   ngOnInit(): void {
-    console.log('ngOnInit called at', Date.now(), 'loading:', this.loading);
     this.loadHistory();
   }
 
@@ -41,73 +36,34 @@ export class HistoryComponent implements OnInit, OnDestroy {
     this.loading.set(true);
     this.errorMessage.set('');
 
-<<<<<<< HEAD
-    this.calorieApi.getEntries(this.selectedDate()).subscribe({
-      next: (entries) => {
-        this.entries.set(entries);
-
-        this.calorieApi.getDailySummary(this.selectedDate()).subscribe({
-          next: (summary) => {
-            this.summary.set(summary);
-            this.loading.set(false);
-          },
-          error: () => {
-            this.summary.set(null);
-            this.errorMessage.set('Failed to load summary');
-            this.loading.set(false);
-          },
-        });
-      },
-      error: () => {
-        this.entries.set([]);
-        this.summary.set(null);
-        this.errorMessage.set('Failed to load history');
-        this.loading.set(false);
-      },
-    });
-  }
-
-  onDeleteEntry(id: number): void {
-    this.errorMessage.set('');
-
-    this.calorieApi.deleteEntry(id).subscribe({
-      next: () => {
-        this.loadHistory();
-      },
-      error: () => {
-        this.errorMessage.set('Failed to delete entry');
-      },
-    });
-=======
     forkJoin({
-      entries: this.calorieApi.getEntries(this.selectedDate),
-      summary: this.calorieApi.getDailySummary(this.selectedDate),
+      entries: this.calorieApi.getEntries(this.selectedDate()),
+      summary: this.calorieApi.getDailySummary(this.selectedDate()),
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ({ entries, summary }) => {
-          this.entries = entries;
-          this.summary = summary;
-          this.loading = false;
+          this.entries.set(entries);
+          this.summary.set(summary);
+          this.loading.set(false);
         },
         error: () => {
-          this.entries = [];
-          this.summary = null;
-          this.errorMessage = 'Failed to load history';
-          this.loading = false;
+          this.entries.set([]);
+          this.summary.set(null);
+          this.errorMessage.set('Failed to load history');
+          this.loading.set(false);
         },
       });
   }
 
   onDeleteEntry(id: number): void {
-    this.errorMessage = '';
+    this.errorMessage.set('');
     this.calorieApi.deleteEntry(id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => this.loadHistory(),
-        error: () => (this.errorMessage = 'Failed to delete entry'),
+        error: () => this.errorMessage.set('Failed to delete entry'),
       });
->>>>>>> 59713fa200c4b5d68356c26c9495724556b34355
   }
 
   getMealTypeLabel(mealType: string): string {
